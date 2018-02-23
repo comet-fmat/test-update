@@ -1,0 +1,1078 @@
+  [1m[36m (0.6ms)[0m  [1mDROP DATABASE IF EXISTS "tmc-development"[0m
+  [1m[35m (0.2ms)[0m  DROP DATABASE IF EXISTS "tmc-test"
+  [1m[36m (1336.9ms)[0m  [1mCREATE DATABASE "tmc-development" ENCODING = 'utf8'[0m
+  [1m[35m (631.3ms)[0m  CREATE DATABASE "tmc-test" ENCODING = 'utf8'
+  [1m[36mSQL (21.5ms)[0m  [1mCREATE EXTENSION IF NOT EXISTS "plpgsql"[0m
+  [1m[35m (10.3ms)[0m  CREATE TABLE "action_tokens" ("id" serial primary key, "user_id" integer NOT NULL, "token" character varying NOT NULL, "created_at" timestamp NOT NULL, "action" integer NOT NULL, "expires_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (4.6ms)[0m  [1mCREATE TABLE "assistantships" ("id" serial primary key, "user_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.2ms)[0m  CREATE UNIQUE INDEX  "index_assistantships_on_user_id_and_course_id" ON "assistantships" USING btree ("user_id", "course_id")
+  [1m[36m (8.5ms)[0m  [1mCREATE TABLE "available_points" ("id" serial primary key, "exercise_id" integer NOT NULL, "name" character varying NOT NULL, "requires_review" boolean DEFAULT 'f' NOT NULL) [0m
+  [1m[35m (4.2ms)[0m  CREATE UNIQUE INDEX  "index_available_points_on_exercise_id_and_name" ON "available_points" USING btree ("exercise_id", "name")
+  [1m[36m (6.1ms)[0m  [1mCREATE TABLE "awarded_points" ("id" serial primary key, "course_id" integer NOT NULL, "user_id" integer NOT NULL, "submission_id" integer, "name" character varying NOT NULL, "created_at" timestamp) [0m
+  [1m[35m (4.3ms)[0m  CREATE UNIQUE INDEX  "index_awarded_points_on_course_id_and_user_id_and_name" ON "awarded_points" USING btree ("course_id", "user_id", "name")
+  [1m[36m (3.8ms)[0m  [1mCREATE  INDEX  "index_awarded_points_on_course_id_and_user_id_and_submission_id" ON "awarded_points" USING btree ("course_id", "user_id", "submission_id")[0m
+  [1m[35m (4.8ms)[0m  CREATE UNIQUE INDEX  "index_awarded_points_on_user_id_and_submission_id_and_name" ON "awarded_points" USING btree ("user_id", "submission_id", "name")
+  [1m[36m (6.1ms)[0m  [1mCREATE TABLE "certificates" ("id" serial primary key, "name" character varying, "pdf" bytea, "user_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (8.9ms)[0m  CREATE TABLE "course_notifications" ("id" serial primary key, "topic" character varying, "message" character varying, "sender_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (6.7ms)[0m  [1mCREATE TABLE "course_templates" ("id" serial primary key, "name" character varying, "title" character varying, "description" character varying, "material_url" character varying, "source_url" character varying, "dummy" boolean DEFAULT 'f' NOT NULL, "hidden" boolean DEFAULT 'f', "cache_version" integer DEFAULT 0 NOT NULL, "source_backend" character varying DEFAULT 'git' NOT NULL, "git_branch" character varying DEFAULT 'master' NOT NULL, "expires_at" timestamp, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (6.5ms)[0m  CREATE TABLE "courses" ("id" serial primary key, "name" character varying, "created_at" timestamp, "updated_at" timestamp, "hide_after" timestamp, "hidden" boolean DEFAULT 'f' NOT NULL, "cache_version" integer DEFAULT 0 NOT NULL, "spreadsheet_key" character varying, "hidden_if_registered_after" timestamp, "refreshed_at" timestamp, "locked_exercise_points_visible" boolean DEFAULT 't' NOT NULL, "description" text, "paste_visibility" character varying, "formal_name" character varying, "certificate_downloadable" boolean DEFAULT 'f' NOT NULL, "certificate_unlock_spec" character varying, "organization_id" integer, "disabled_status" integer DEFAULT 1, "title" character varying, "material_url" character varying, "course_template_id" integer NOT NULL, "hide_submission_results" boolean DEFAULT 'f', "external_scoreboard_url" character varying, "initial_refresh_ready" boolean DEFAULT 'f', "hide_submissions" boolean DEFAULT 'f' NOT NULL) 
+  [1m[36m (5.7ms)[0m  [1mCREATE  INDEX  "index_courses_on_organization_id" ON "courses" USING btree ("organization_id")[0m
+  [1m[35m (7.4ms)[0m  CREATE TABLE "exercises" ("id" serial primary key, "name" character varying, "created_at" timestamp, "updated_at" timestamp, "course_id" integer, "publish_time" timestamp, "gdocs_sheet" character varying, "hidden" boolean DEFAULT 'f' NOT NULL, "returnable_forced" boolean, "checksum" character varying DEFAULT '' NOT NULL, "solution_visible_after" timestamp, "has_tests" boolean DEFAULT 'f' NOT NULL, "deadline_spec" text, "unlock_spec" text, "runtime_params" character varying DEFAULT '[]' NOT NULL, "valgrind_strategy" character varying, "code_review_requests_enabled" boolean DEFAULT 'f' NOT NULL, "run_tests_locally_action_enabled" boolean DEFAULT 't' NOT NULL, "soft_deadline_spec" text, "disabled_status" integer DEFAULT 0, "hide_submission_results" boolean DEFAULT 'f') 
+  [1m[36m (3.6ms)[0m  [1mCREATE UNIQUE INDEX  "index_exercises_on_course_id_and_name" ON "exercises" USING btree ("course_id", "name")[0m
+  [1m[35m (3.2ms)[0m  CREATE  INDEX  "index_exercises_on_gdocs_sheet" ON "exercises" USING btree ("gdocs_sheet")
+  [1m[36m (8.5ms)[0m  [1mCREATE TABLE "feedback_answers" ("id" serial primary key, "feedback_question_id" integer NOT NULL, "course_id" integer NOT NULL, "exercise_name" character varying NOT NULL, "submission_id" integer, "answer" text NOT NULL, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.9ms)[0m  CREATE  INDEX  "index_feedback_answers_question_course_exercise" ON "feedback_answers" USING btree ("feedback_question_id", "course_id", "exercise_name")
+  [1m[36m (3.2ms)[0m  [1mCREATE  INDEX  "index_feedback_answers_question" ON "feedback_answers" USING btree ("submission_id")[0m
+  [1m[35m (7.1ms)[0m  CREATE TABLE "feedback_questions" ("id" serial primary key, "course_id" integer NOT NULL, "question" text NOT NULL, "kind" character varying NOT NULL, "created_at" timestamp, "updated_at" timestamp, "position" integer NOT NULL, "title" text) 
+  [1m[36m (1.4ms)[0m  [1mCREATE TABLE "migrated_submissions" ("from_course_id" integer, "to_course_id" integer, "original_submission_id" integer, "new_submission_id" integer, "created_at" timestamp NOT NULL, "updated_at" timestamp NOT NULL) [0m
+  [1m[35m (4.9ms)[0m  CREATE UNIQUE INDEX  "unique_values" ON "migrated_submissions" USING btree ("from_course_id", "to_course_id", "original_submission_id", "new_submission_id")
+  [1m[36m (6.2ms)[0m  [1mCREATE TABLE "oauth_access_grants" ("id" serial primary key, "resource_owner_id" integer NOT NULL, "application_id" integer NOT NULL, "token" character varying NOT NULL, "expires_in" integer NOT NULL, "redirect_uri" text NOT NULL, "created_at" timestamp NOT NULL, "revoked_at" timestamp, "scopes" character varying) [0m
+  [1m[35m (4.5ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_grants_on_token" ON "oauth_access_grants" USING btree ("token")
+  [1m[36m (6.6ms)[0m  [1mCREATE TABLE "oauth_access_tokens" ("id" serial primary key, "resource_owner_id" integer, "application_id" integer, "token" character varying NOT NULL, "refresh_token" character varying, "expires_in" integer, "revoked_at" timestamp, "created_at" timestamp NOT NULL, "scopes" character varying) [0m
+  [1m[35m (3.2ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_tokens_on_refresh_token" ON "oauth_access_tokens" USING btree ("refresh_token")
+  [1m[36m (4.3ms)[0m  [1mCREATE  INDEX  "index_oauth_access_tokens_on_resource_owner_id" ON "oauth_access_tokens" USING btree ("resource_owner_id")[0m
+  [1m[35m (3.0ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_tokens_on_token" ON "oauth_access_tokens" USING btree ("token")
+  [1m[36m (6.1ms)[0m  [1mCREATE TABLE "oauth_applications" ("id" serial primary key, "name" character varying NOT NULL, "uid" character varying NOT NULL, "secret" character varying NOT NULL, "redirect_uri" text NOT NULL, "scopes" character varying DEFAULT '' NOT NULL, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.8ms)[0m  CREATE UNIQUE INDEX  "index_oauth_applications_on_uid" ON "oauth_applications" USING btree ("uid")
+  [1m[36m (7.9ms)[0m  [1mCREATE TABLE "organizations" ("id" serial primary key, "name" character varying, "information" character varying, "slug" character varying, "verified_at" timestamp, "verified" boolean, "disabled" boolean DEFAULT 'f' NOT NULL, "disabled_reason" character varying, "created_at" timestamp, "updated_at" timestamp, "hidden" boolean DEFAULT 'f', "creator_id" integer, "logo_file_name" character varying, "logo_content_type" character varying, "logo_file_size" integer, "logo_updated_at" timestamp, "phone" character varying, "contact_information" text, "email" character varying, "website" text, "pinned" boolean DEFAULT 'f' NOT NULL) [0m
+  [1m[35m (4.0ms)[0m  CREATE TABLE "points_upload_queues" ("id" serial primary key, "point_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (5.8ms)[0m  [1mCREATE TABLE "reply_to_feedback_answers" ("id" serial primary key, "feedback_answer_id" integer, "body" text, "from" character varying, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (8.4ms)[0m  CREATE TABLE "reviews" ("id" serial primary key, "submission_id" integer NOT NULL, "reviewer_id" integer, "review_body" text NOT NULL, "created_at" timestamp, "updated_at" timestamp, "points" text, "marked_as_read" boolean DEFAULT 'f' NOT NULL) 
+  [1m[36m (3.3ms)[0m  [1mCREATE  INDEX  "index_reviews_on_reviewer_id" ON "reviews" USING btree ("reviewer_id")[0m
+  [1m[35m (4.4ms)[0m  CREATE  INDEX  "index_reviews_on_submission_id" ON "reviews" USING btree ("submission_id")
+  [1m[36m (6.0ms)[0m  [1mCREATE TABLE "sessions" ("id" serial primary key, "session_id" character varying NOT NULL, "data" text, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.4ms)[0m  CREATE  INDEX  "index_sessions_on_session_id" ON "sessions" USING btree ("session_id")
+  [1m[36m (27.5ms)[0m  [1mCREATE  INDEX  "index_sessions_on_updated_at" ON "sessions" USING btree ("updated_at")[0m
+  [1m[35m (8.1ms)[0m  CREATE TABLE "submission_data" ("submission_id" serial primary key, "return_file" bytea, "stdout_compressed" bytea, "stderr_compressed" bytea, "vm_log_compressed" bytea, "valgrind_compressed" bytea, "validations_compressed" bytea) 
+  [1m[36m (7.7ms)[0m  [1mCREATE TABLE "submissions" ("id" serial primary key, "user_id" integer, "pretest_error" text, "created_at" timestamp, "updated_at" timestamp, "exercise_name" character varying NOT NULL, "course_id" integer NOT NULL, "processed" boolean DEFAULT 'f' NOT NULL, "secret_token" character varying, "all_tests_passed" boolean DEFAULT 'f' NOT NULL, "points" text, "processing_tried_at" timestamp, "processing_began_at" timestamp, "processing_completed_at" timestamp, "times_sent_to_sandbox" integer DEFAULT 0 NOT NULL, "processing_attempts_started_at" timestamp, "processing_priority" integer DEFAULT 0 NOT NULL, "stdout_compressed" bytea, "stderr_compressed" bytea, "params_json" text, "requires_review" boolean DEFAULT 'f' NOT NULL, "requests_review" boolean DEFAULT 'f' NOT NULL, "reviewed" boolean DEFAULT 'f' NOT NULL, "message_for_reviewer" text DEFAULT '' NOT NULL, "newer_submission_reviewed" boolean DEFAULT 'f' NOT NULL, "review_dismissed" boolean DEFAULT 'f' NOT NULL, "paste_available" boolean DEFAULT 'f' NOT NULL, "message_for_paste" text, "paste_key" character varying, "client_time" timestamp, "client_nanotime" bigint, "client_ip" text, "sandbox" character varying) [0m
+  [1m[35m (2.8ms)[0m  CREATE  INDEX  "index_submissions_on_course_id_and_exercise_name" ON "submissions" USING btree ("course_id", "exercise_name")
+  [1m[36m (3.5ms)[0m  [1mCREATE  INDEX  "index_submissions_on_course_id_and_user_id" ON "submissions" USING btree ("course_id", "user_id")[0m
+  [1m[35m (3.2ms)[0m  CREATE  INDEX  "index_submissions_on_processed" ON "submissions" USING btree ("processed")
+  [1m[36m (3.0ms)[0m  [1mCREATE  INDEX  "index_submissions_on_user_id_and_exercise_name" ON "submissions" USING btree ("user_id", "exercise_name")[0m
+  [1m[35m (16.2ms)[0m  CREATE TABLE "teacherships" ("id" serial primary key, "user_id" integer, "organization_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (3.8ms)[0m  [1mCREATE UNIQUE INDEX  "index_teacherships_on_user_id_and_organization_id" ON "teacherships" USING btree ("user_id", "organization_id")[0m
+  [1m[35m (5.3ms)[0m  CREATE TABLE "test_case_runs" ("id" serial primary key, "submission_id" integer, "test_case_name" text, "message" text, "successful" boolean, "created_at" timestamp, "updated_at" timestamp, "exception" text, "detailed_message" text) 
+  [1m[36m (3.3ms)[0m  [1mCREATE  INDEX  "index_test_case_runs_on_submission_id" ON "test_case_runs" USING btree ("submission_id")[0m
+  [1m[35m (5.7ms)[0m  CREATE TABLE "test_scanner_cache_entries" ("id" serial primary key, "course_id" integer NOT NULL, "exercise_name" character varying, "files_hash" character varying, "value" text, "created_at" timestamp) 
+  [1m[36m (2.8ms)[0m  [1mCREATE UNIQUE INDEX  "index_test_scanner_cache_entries_on_course_id_and_exercise_name" ON "test_scanner_cache_entries" USING btree ("course_id", "exercise_name")[0m
+  [1m[35m (4.4ms)[0m  CREATE TABLE "uncomputed_unlocks" ("id" serial primary key, "course_id" integer NOT NULL, "user_id" integer NOT NULL, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (3.3ms)[0m  [1mCREATE  INDEX  "index_uncomputed_unlocks_on_course_id_and_user_id" ON "uncomputed_unlocks" USING btree ("course_id", "user_id")[0m
+  [1m[35m (7.4ms)[0m  CREATE TABLE "unlocks" ("id" serial primary key, "user_id" integer NOT NULL, "course_id" integer NOT NULL, "exercise_name" character varying NOT NULL, "valid_after" timestamp, "created_at" timestamp NOT NULL) 
+  [1m[36m (3.6ms)[0m  [1mCREATE UNIQUE INDEX  "index_unlocks_on_user_id_and_course_id_and_exercise_name" ON "unlocks" USING btree ("user_id", "course_id", "exercise_name")[0m
+  [1m[35m (5.4ms)[0m  CREATE TABLE "user_field_values" ("id" serial primary key, "user_id" integer NOT NULL, "field_name" character varying NOT NULL, "value" text NOT NULL, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (3.7ms)[0m  [1mCREATE UNIQUE INDEX  "index_user_field_values_on_user_id_and_field_name" ON "user_field_values" USING btree ("user_id", "field_name")[0m
+  [1m[35m (111.0ms)[0m  CREATE TABLE "users" ("id" serial primary key, "login" character varying NOT NULL, "password_hash" text, "created_at" timestamp, "updated_at" timestamp, "salt" character varying, "administrator" boolean DEFAULT 'f' NOT NULL, "email" text DEFAULT '' NOT NULL, "legitimate_student" boolean DEFAULT 't' NOT NULL) 
+  [1m[36m (6.1ms)[0m  [1mCREATE UNIQUE INDEX  "index_users_on_login" ON "users" USING btree ("login")[0m
+  [1m[35m (4.6ms)[0m  ALTER TABLE "action_tokens" ADD CONSTRAINT "fk_rails_663c57806d"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (3.7ms)[0m  [1mALTER TABLE "available_points" ADD CONSTRAINT "fk_rails_5c4b9d52bb"
+FOREIGN KEY ("exercise_id")
+  REFERENCES "exercises" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (3.9ms)[0m  ALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_c73c8dda3d"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (3.6ms)[0m  [1mALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_54a884b931"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE SET NULL[0m
+  [1m[35m (3.7ms)[0m  ALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_7e6a5f6efc"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (4.2ms)[0m  [1mALTER TABLE "courses" ADD CONSTRAINT "fk_rails_dc0926a4d4"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+[0m
+  [1m[35m (4.4ms)[0m  ALTER TABLE "exercises" ADD CONSTRAINT "fk_rails_41b1911302"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.9ms)[0m  [1mALTER TABLE "feedback_answers" ADD CONSTRAINT "fk_rails_0615442e63"
+FOREIGN KEY ("feedback_question_id")
+  REFERENCES "feedback_questions" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.2ms)[0m  ALTER TABLE "feedback_answers" ADD CONSTRAINT "fk_rails_3304bbd0a0"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE SET NULL
+  [1m[36m (3.2ms)[0m  [1mALTER TABLE "feedback_questions" ADD CONSTRAINT "fk_rails_99e220604d"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.6ms)[0m  ALTER TABLE "reviews" ADD CONSTRAINT "fk_rails_75ee3b2fca"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.3ms)[0m  [1mALTER TABLE "reviews" ADD CONSTRAINT "fk_rails_007031d9cb"
+FOREIGN KEY ("reviewer_id")
+  REFERENCES "users" ("id")
+[0m
+  [1m[35m (2.5ms)[0m  ALTER TABLE "submission_data" ADD CONSTRAINT "fk_rails_0b38a74c44"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.4ms)[0m  [1mALTER TABLE "submissions" ADD CONSTRAINT "fk_rails_bcaf91aef8"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (3.2ms)[0m  ALTER TABLE "submissions" ADD CONSTRAINT "fk_rails_8d85741475"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.3ms)[0m  [1mALTER TABLE "test_case_runs" ADD CONSTRAINT "fk_rails_acf794ad02"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.0ms)[0m  ALTER TABLE "test_scanner_cache_entries" ADD CONSTRAINT "fk_rails_5047ff1d79"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.7ms)[0m  [1mALTER TABLE "user_field_values" ADD CONSTRAINT "fk_rails_2f99f81f2b"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (5.6ms)[0m  CREATE TABLE "schema_migrations" ("version" character varying NOT NULL) 
+  [1m[36m (4.3ms)[0m  [1mCREATE UNIQUE INDEX  "unique_schema_migrations" ON "schema_migrations"  ("version")[0m
+  [1m[35m (0.4ms)[0m  SELECT version FROM "schema_migrations"
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170809122816')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120110110549')
+  [1m[36m (2.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150625081825')[0m
+  [1m[35m (2.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20161024122339')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120918101917')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170502055142')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130825165613')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120127224356')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150625081824')[0m
+  [1m[35m (2.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150518100837')
+  [1m[36m (1.5ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170406120012')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141006185055')
+  [1m[36m (2.6ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126174124')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120913102113')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121005102836')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140816195048')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140108131242')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170406111540')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121005143551')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150609074523')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120113120508')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20110926205045')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121001132051')[0m
+  [1m[35m (1.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150625081826')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130204075719')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121114110119')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130812070259')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170103094247')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130312123338')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120519162832')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120116114808')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120508093025')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120117231925')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150727080941')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170317082016')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120116233637')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120125044449')[0m
+  [1m[35m (1.6ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140809195619')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150727080841')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120616095759')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111219180842')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160804120140')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20160214132532')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130130232222')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120929023553')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120917104257')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126174157')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150625081827')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130125013607')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130812064400')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150612072207')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150408121203')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121113223514')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120615225538')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20141008212356')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140112141119')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130819104237')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120911152429')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120214103259')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20131219195546')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140519103112')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130419131100')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126233917')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150817095112')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20160309101401')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121005110310')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150207223237')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160310111733')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150702084350')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140921155940')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121117155534')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111215084407')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150608100828')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150527103134')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120201045735')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111028045923')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20151126104102')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120926005853')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121209082131')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120128181256')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126173543')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130415103348')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120210064351')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111025123030')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121117121310')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120212110218')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120917132431')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150519110114')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140810120233')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130426215042')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130419110330')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120203165326')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150611073002')[0m
+  [1m[35m (1.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120318214231')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140112023830')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130202213330')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111109140507')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160302150252')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120123064427')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140116183756')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170126122618')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111115154221')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111020105937')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141007201230')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120930115922')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120128174046')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150701054936')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141124122855')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150222171258')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120206141225')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126002231')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130131220459')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121026060109')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120202060641')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130212001309')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150323152247')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120616103525')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120201051238')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20141007203417')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130916190007')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120924110353')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160304123259')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120926143255')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121002184737')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120620134550')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120403080704')
+  [1m[36mSQL (0.4ms)[0m  [1mCREATE EXTENSION IF NOT EXISTS "plpgsql"[0m
+  [1m[35m (9.1ms)[0m  CREATE TABLE "action_tokens" ("id" serial primary key, "user_id" integer NOT NULL, "token" character varying NOT NULL, "created_at" timestamp NOT NULL, "action" integer NOT NULL, "expires_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (4.4ms)[0m  [1mCREATE TABLE "assistantships" ("id" serial primary key, "user_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.3ms)[0m  CREATE UNIQUE INDEX  "index_assistantships_on_user_id_and_course_id" ON "assistantships" USING btree ("user_id", "course_id")
+  [1m[36m (7.3ms)[0m  [1mCREATE TABLE "available_points" ("id" serial primary key, "exercise_id" integer NOT NULL, "name" character varying NOT NULL, "requires_review" boolean DEFAULT 'f' NOT NULL) [0m
+  [1m[35m (3.4ms)[0m  CREATE UNIQUE INDEX  "index_available_points_on_exercise_id_and_name" ON "available_points" USING btree ("exercise_id", "name")
+  [1m[36m (6.1ms)[0m  [1mCREATE TABLE "awarded_points" ("id" serial primary key, "course_id" integer NOT NULL, "user_id" integer NOT NULL, "submission_id" integer, "name" character varying NOT NULL, "created_at" timestamp) [0m
+  [1m[35m (3.5ms)[0m  CREATE UNIQUE INDEX  "index_awarded_points_on_course_id_and_user_id_and_name" ON "awarded_points" USING btree ("course_id", "user_id", "name")
+  [1m[36m (4.0ms)[0m  [1mCREATE  INDEX  "index_awarded_points_on_course_id_and_user_id_and_submission_id" ON "awarded_points" USING btree ("course_id", "user_id", "submission_id")[0m
+  [1m[35m (4.0ms)[0m  CREATE UNIQUE INDEX  "index_awarded_points_on_user_id_and_submission_id_and_name" ON "awarded_points" USING btree ("user_id", "submission_id", "name")
+  [1m[36m (7.3ms)[0m  [1mCREATE TABLE "certificates" ("id" serial primary key, "name" character varying, "pdf" bytea, "user_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (7.1ms)[0m  CREATE TABLE "course_notifications" ("id" serial primary key, "topic" character varying, "message" character varying, "sender_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (7.7ms)[0m  [1mCREATE TABLE "course_templates" ("id" serial primary key, "name" character varying, "title" character varying, "description" character varying, "material_url" character varying, "source_url" character varying, "dummy" boolean DEFAULT 'f' NOT NULL, "hidden" boolean DEFAULT 'f', "cache_version" integer DEFAULT 0 NOT NULL, "source_backend" character varying DEFAULT 'git' NOT NULL, "git_branch" character varying DEFAULT 'master' NOT NULL, "expires_at" timestamp, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (7.6ms)[0m  CREATE TABLE "courses" ("id" serial primary key, "name" character varying, "created_at" timestamp, "updated_at" timestamp, "hide_after" timestamp, "hidden" boolean DEFAULT 'f' NOT NULL, "cache_version" integer DEFAULT 0 NOT NULL, "spreadsheet_key" character varying, "hidden_if_registered_after" timestamp, "refreshed_at" timestamp, "locked_exercise_points_visible" boolean DEFAULT 't' NOT NULL, "description" text, "paste_visibility" character varying, "formal_name" character varying, "certificate_downloadable" boolean DEFAULT 'f' NOT NULL, "certificate_unlock_spec" character varying, "organization_id" integer, "disabled_status" integer DEFAULT 1, "title" character varying, "material_url" character varying, "course_template_id" integer NOT NULL, "hide_submission_results" boolean DEFAULT 'f', "external_scoreboard_url" character varying, "initial_refresh_ready" boolean DEFAULT 'f', "hide_submissions" boolean DEFAULT 'f' NOT NULL) 
+  [1m[36m (4.0ms)[0m  [1mCREATE  INDEX  "index_courses_on_organization_id" ON "courses" USING btree ("organization_id")[0m
+  [1m[35m (7.5ms)[0m  CREATE TABLE "exercises" ("id" serial primary key, "name" character varying, "created_at" timestamp, "updated_at" timestamp, "course_id" integer, "publish_time" timestamp, "gdocs_sheet" character varying, "hidden" boolean DEFAULT 'f' NOT NULL, "returnable_forced" boolean, "checksum" character varying DEFAULT '' NOT NULL, "solution_visible_after" timestamp, "has_tests" boolean DEFAULT 'f' NOT NULL, "deadline_spec" text, "unlock_spec" text, "runtime_params" character varying DEFAULT '[]' NOT NULL, "valgrind_strategy" character varying, "code_review_requests_enabled" boolean DEFAULT 'f' NOT NULL, "run_tests_locally_action_enabled" boolean DEFAULT 't' NOT NULL, "soft_deadline_spec" text, "disabled_status" integer DEFAULT 0, "hide_submission_results" boolean DEFAULT 'f') 
+  [1m[36m (3.2ms)[0m  [1mCREATE UNIQUE INDEX  "index_exercises_on_course_id_and_name" ON "exercises" USING btree ("course_id", "name")[0m
+  [1m[35m (3.2ms)[0m  CREATE  INDEX  "index_exercises_on_gdocs_sheet" ON "exercises" USING btree ("gdocs_sheet")
+  [1m[36m (6.4ms)[0m  [1mCREATE TABLE "feedback_answers" ("id" serial primary key, "feedback_question_id" integer NOT NULL, "course_id" integer NOT NULL, "exercise_name" character varying NOT NULL, "submission_id" integer, "answer" text NOT NULL, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.5ms)[0m  CREATE  INDEX  "index_feedback_answers_question_course_exercise" ON "feedback_answers" USING btree ("feedback_question_id", "course_id", "exercise_name")
+  [1m[36m (4.7ms)[0m  [1mCREATE  INDEX  "index_feedback_answers_question" ON "feedback_answers" USING btree ("submission_id")[0m
+  [1m[35m (7.9ms)[0m  CREATE TABLE "feedback_questions" ("id" serial primary key, "course_id" integer NOT NULL, "question" text NOT NULL, "kind" character varying NOT NULL, "created_at" timestamp, "updated_at" timestamp, "position" integer NOT NULL, "title" text) 
+  [1m[36m (1.6ms)[0m  [1mCREATE TABLE "migrated_submissions" ("from_course_id" integer, "to_course_id" integer, "original_submission_id" integer, "new_submission_id" integer, "created_at" timestamp NOT NULL, "updated_at" timestamp NOT NULL) [0m
+  [1m[35m (3.5ms)[0m  CREATE UNIQUE INDEX  "unique_values" ON "migrated_submissions" USING btree ("from_course_id", "to_course_id", "original_submission_id", "new_submission_id")
+  [1m[36m (6.3ms)[0m  [1mCREATE TABLE "oauth_access_grants" ("id" serial primary key, "resource_owner_id" integer NOT NULL, "application_id" integer NOT NULL, "token" character varying NOT NULL, "expires_in" integer NOT NULL, "redirect_uri" text NOT NULL, "created_at" timestamp NOT NULL, "revoked_at" timestamp, "scopes" character varying) [0m
+  [1m[35m (3.0ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_grants_on_token" ON "oauth_access_grants" USING btree ("token")
+  [1m[36m (7.0ms)[0m  [1mCREATE TABLE "oauth_access_tokens" ("id" serial primary key, "resource_owner_id" integer, "application_id" integer, "token" character varying NOT NULL, "refresh_token" character varying, "expires_in" integer, "revoked_at" timestamp, "created_at" timestamp NOT NULL, "scopes" character varying) [0m
+  [1m[35m (4.3ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_tokens_on_refresh_token" ON "oauth_access_tokens" USING btree ("refresh_token")
+  [1m[36m (4.4ms)[0m  [1mCREATE  INDEX  "index_oauth_access_tokens_on_resource_owner_id" ON "oauth_access_tokens" USING btree ("resource_owner_id")[0m
+  [1m[35m (4.5ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_tokens_on_token" ON "oauth_access_tokens" USING btree ("token")
+  [1m[36m (7.1ms)[0m  [1mCREATE TABLE "oauth_applications" ("id" serial primary key, "name" character varying NOT NULL, "uid" character varying NOT NULL, "secret" character varying NOT NULL, "redirect_uri" text NOT NULL, "scopes" character varying DEFAULT '' NOT NULL, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.0ms)[0m  CREATE UNIQUE INDEX  "index_oauth_applications_on_uid" ON "oauth_applications" USING btree ("uid")
+  [1m[36m (9.2ms)[0m  [1mCREATE TABLE "organizations" ("id" serial primary key, "name" character varying, "information" character varying, "slug" character varying, "verified_at" timestamp, "verified" boolean, "disabled" boolean DEFAULT 'f' NOT NULL, "disabled_reason" character varying, "created_at" timestamp, "updated_at" timestamp, "hidden" boolean DEFAULT 'f', "creator_id" integer, "logo_file_name" character varying, "logo_content_type" character varying, "logo_file_size" integer, "logo_updated_at" timestamp, "phone" character varying, "contact_information" text, "email" character varying, "website" text, "pinned" boolean DEFAULT 'f' NOT NULL) [0m
+  [1m[35m (5.2ms)[0m  CREATE TABLE "points_upload_queues" ("id" serial primary key, "point_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (7.0ms)[0m  [1mCREATE TABLE "reply_to_feedback_answers" ("id" serial primary key, "feedback_answer_id" integer, "body" text, "from" character varying, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (5.6ms)[0m  CREATE TABLE "reviews" ("id" serial primary key, "submission_id" integer NOT NULL, "reviewer_id" integer, "review_body" text NOT NULL, "created_at" timestamp, "updated_at" timestamp, "points" text, "marked_as_read" boolean DEFAULT 'f' NOT NULL) 
+  [1m[36m (4.4ms)[0m  [1mCREATE  INDEX  "index_reviews_on_reviewer_id" ON "reviews" USING btree ("reviewer_id")[0m
+  [1m[35m (4.0ms)[0m  CREATE  INDEX  "index_reviews_on_submission_id" ON "reviews" USING btree ("submission_id")
+  [1m[36m (6.7ms)[0m  [1mCREATE TABLE "sessions" ("id" serial primary key, "session_id" character varying NOT NULL, "data" text, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.0ms)[0m  CREATE  INDEX  "index_sessions_on_session_id" ON "sessions" USING btree ("session_id")
+  [1m[36m (3.6ms)[0m  [1mCREATE  INDEX  "index_sessions_on_updated_at" ON "sessions" USING btree ("updated_at")[0m
+  [1m[35m (7.9ms)[0m  CREATE TABLE "submission_data" ("submission_id" serial primary key, "return_file" bytea, "stdout_compressed" bytea, "stderr_compressed" bytea, "vm_log_compressed" bytea, "valgrind_compressed" bytea, "validations_compressed" bytea) 
+  [1m[36m (9.3ms)[0m  [1mCREATE TABLE "submissions" ("id" serial primary key, "user_id" integer, "pretest_error" text, "created_at" timestamp, "updated_at" timestamp, "exercise_name" character varying NOT NULL, "course_id" integer NOT NULL, "processed" boolean DEFAULT 'f' NOT NULL, "secret_token" character varying, "all_tests_passed" boolean DEFAULT 'f' NOT NULL, "points" text, "processing_tried_at" timestamp, "processing_began_at" timestamp, "processing_completed_at" timestamp, "times_sent_to_sandbox" integer DEFAULT 0 NOT NULL, "processing_attempts_started_at" timestamp, "processing_priority" integer DEFAULT 0 NOT NULL, "stdout_compressed" bytea, "stderr_compressed" bytea, "params_json" text, "requires_review" boolean DEFAULT 'f' NOT NULL, "requests_review" boolean DEFAULT 'f' NOT NULL, "reviewed" boolean DEFAULT 'f' NOT NULL, "message_for_reviewer" text DEFAULT '' NOT NULL, "newer_submission_reviewed" boolean DEFAULT 'f' NOT NULL, "review_dismissed" boolean DEFAULT 'f' NOT NULL, "paste_available" boolean DEFAULT 'f' NOT NULL, "message_for_paste" text, "paste_key" character varying, "client_time" timestamp, "client_nanotime" bigint, "client_ip" text, "sandbox" character varying) [0m
+  [1m[35m (2.9ms)[0m  CREATE  INDEX  "index_submissions_on_course_id_and_exercise_name" ON "submissions" USING btree ("course_id", "exercise_name")
+  [1m[36m (4.9ms)[0m  [1mCREATE  INDEX  "index_submissions_on_course_id_and_user_id" ON "submissions" USING btree ("course_id", "user_id")[0m
+  [1m[35m (4.3ms)[0m  CREATE  INDEX  "index_submissions_on_processed" ON "submissions" USING btree ("processed")
+  [1m[36m (4.3ms)[0m  [1mCREATE  INDEX  "index_submissions_on_user_id_and_exercise_name" ON "submissions" USING btree ("user_id", "exercise_name")[0m
+  [1m[35m (4.7ms)[0m  CREATE TABLE "teacherships" ("id" serial primary key, "user_id" integer, "organization_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (3.8ms)[0m  [1mCREATE UNIQUE INDEX  "index_teacherships_on_user_id_and_organization_id" ON "teacherships" USING btree ("user_id", "organization_id")[0m
+  [1m[35m (7.3ms)[0m  CREATE TABLE "test_case_runs" ("id" serial primary key, "submission_id" integer, "test_case_name" text, "message" text, "successful" boolean, "created_at" timestamp, "updated_at" timestamp, "exception" text, "detailed_message" text) 
+  [1m[36m (3.9ms)[0m  [1mCREATE  INDEX  "index_test_case_runs_on_submission_id" ON "test_case_runs" USING btree ("submission_id")[0m
+  [1m[35m (7.6ms)[0m  CREATE TABLE "test_scanner_cache_entries" ("id" serial primary key, "course_id" integer NOT NULL, "exercise_name" character varying, "files_hash" character varying, "value" text, "created_at" timestamp) 
+  [1m[36m (3.3ms)[0m  [1mCREATE UNIQUE INDEX  "index_test_scanner_cache_entries_on_course_id_and_exercise_name" ON "test_scanner_cache_entries" USING btree ("course_id", "exercise_name")[0m
+  [1m[35m (4.2ms)[0m  CREATE TABLE "uncomputed_unlocks" ("id" serial primary key, "course_id" integer NOT NULL, "user_id" integer NOT NULL, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (3.3ms)[0m  [1mCREATE  INDEX  "index_uncomputed_unlocks_on_course_id_and_user_id" ON "uncomputed_unlocks" USING btree ("course_id", "user_id")[0m
+  [1m[35m (50.1ms)[0m  CREATE TABLE "unlocks" ("id" serial primary key, "user_id" integer NOT NULL, "course_id" integer NOT NULL, "exercise_name" character varying NOT NULL, "valid_after" timestamp, "created_at" timestamp NOT NULL) 
+  [1m[36m (4.6ms)[0m  [1mCREATE UNIQUE INDEX  "index_unlocks_on_user_id_and_course_id_and_exercise_name" ON "unlocks" USING btree ("user_id", "course_id", "exercise_name")[0m
+  [1m[35m (10.9ms)[0m  CREATE TABLE "user_field_values" ("id" serial primary key, "user_id" integer NOT NULL, "field_name" character varying NOT NULL, "value" text NOT NULL, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (5.2ms)[0m  [1mCREATE UNIQUE INDEX  "index_user_field_values_on_user_id_and_field_name" ON "user_field_values" USING btree ("user_id", "field_name")[0m
+  [1m[35m (10.6ms)[0m  CREATE TABLE "users" ("id" serial primary key, "login" character varying NOT NULL, "password_hash" text, "created_at" timestamp, "updated_at" timestamp, "salt" character varying, "administrator" boolean DEFAULT 'f' NOT NULL, "email" text DEFAULT '' NOT NULL, "legitimate_student" boolean DEFAULT 't' NOT NULL) 
+  [1m[36m (5.9ms)[0m  [1mCREATE UNIQUE INDEX  "index_users_on_login" ON "users" USING btree ("login")[0m
+  [1m[35m (4.5ms)[0m  ALTER TABLE "action_tokens" ADD CONSTRAINT "fk_rails_663c57806d"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (5.0ms)[0m  [1mALTER TABLE "available_points" ADD CONSTRAINT "fk_rails_5c4b9d52bb"
+FOREIGN KEY ("exercise_id")
+  REFERENCES "exercises" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (3.8ms)[0m  ALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_c73c8dda3d"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (3.8ms)[0m  [1mALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_54a884b931"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE SET NULL[0m
+  [1m[35m (3.6ms)[0m  ALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_7e6a5f6efc"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (3.1ms)[0m  [1mALTER TABLE "courses" ADD CONSTRAINT "fk_rails_dc0926a4d4"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+[0m
+  [1m[35m (2.9ms)[0m  ALTER TABLE "exercises" ADD CONSTRAINT "fk_rails_41b1911302"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (3.0ms)[0m  [1mALTER TABLE "feedback_answers" ADD CONSTRAINT "fk_rails_0615442e63"
+FOREIGN KEY ("feedback_question_id")
+  REFERENCES "feedback_questions" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (3.2ms)[0m  ALTER TABLE "feedback_answers" ADD CONSTRAINT "fk_rails_3304bbd0a0"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE SET NULL
+  [1m[36m (2.3ms)[0m  [1mALTER TABLE "feedback_questions" ADD CONSTRAINT "fk_rails_99e220604d"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.0ms)[0m  ALTER TABLE "reviews" ADD CONSTRAINT "fk_rails_75ee3b2fca"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.4ms)[0m  [1mALTER TABLE "reviews" ADD CONSTRAINT "fk_rails_007031d9cb"
+FOREIGN KEY ("reviewer_id")
+  REFERENCES "users" ("id")
+[0m
+  [1m[35m (2.5ms)[0m  ALTER TABLE "submission_data" ADD CONSTRAINT "fk_rails_0b38a74c44"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.2ms)[0m  [1mALTER TABLE "submissions" ADD CONSTRAINT "fk_rails_bcaf91aef8"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.1ms)[0m  ALTER TABLE "submissions" ADD CONSTRAINT "fk_rails_8d85741475"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.3ms)[0m  [1mALTER TABLE "test_case_runs" ADD CONSTRAINT "fk_rails_acf794ad02"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.2ms)[0m  ALTER TABLE "test_scanner_cache_entries" ADD CONSTRAINT "fk_rails_5047ff1d79"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.2ms)[0m  [1mALTER TABLE "user_field_values" ADD CONSTRAINT "fk_rails_2f99f81f2b"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (4.9ms)[0m  CREATE TABLE "schema_migrations" ("version" character varying NOT NULL) 
+  [1m[36m (3.4ms)[0m  [1mCREATE UNIQUE INDEX  "unique_schema_migrations" ON "schema_migrations"  ("version")[0m
+  [1m[35m (0.4ms)[0m  SELECT version FROM "schema_migrations"
+  [1m[36m (1.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170809122816')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120110110549')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150625081825')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20161024122339')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120918101917')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170502055142')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130825165613')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120127224356')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150625081824')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150518100837')
+  [1m[36m (1.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170406120012')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141006185055')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126174124')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120913102113')
+  [1m[36m (1.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121005102836')[0m
+  [1m[35m (1.5ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140816195048')
+  [1m[36m (1.5ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140108131242')[0m
+  [1m[35m (1.7ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170406111540')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121005143551')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150609074523')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120113120508')[0m
+  [1m[35m (1.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20110926205045')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121001132051')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150625081826')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130204075719')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121114110119')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130812070259')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170103094247')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130312123338')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120519162832')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120116114808')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120508093025')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120117231925')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150727080941')
+  [1m[36m (1.6ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170317082016')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120116233637')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120125044449')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140809195619')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150727080841')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120616095759')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111219180842')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160804120140')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20160214132532')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130130232222')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120929023553')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120917104257')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126174157')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150625081827')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130125013607')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130812064400')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150612072207')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150408121203')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121113223514')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120615225538')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20141008212356')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140112141119')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130819104237')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120911152429')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120214103259')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20131219195546')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140519103112')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130419131100')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126233917')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150817095112')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20160309101401')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121005110310')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150207223237')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160310111733')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150702084350')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140921155940')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121117155534')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111215084407')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150608100828')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150527103134')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120201045735')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111028045923')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20151126104102')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120926005853')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121209082131')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120128181256')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126173543')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130415103348')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120210064351')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111025123030')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121117121310')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120212110218')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120917132431')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150519110114')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140810120233')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130426215042')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130419110330')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120203165326')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150611073002')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120318214231')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140112023830')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130202213330')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111109140507')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160302150252')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120123064427')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140116183756')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170126122618')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111115154221')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111020105937')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141007201230')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120930115922')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120128174046')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150701054936')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141124122855')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150222171258')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120206141225')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126002231')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130131220459')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121026060109')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120202060641')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130212001309')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150323152247')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120616103525')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120201051238')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20141007203417')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130916190007')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120924110353')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160304123259')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120926143255')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121002184737')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120620134550')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120403080704')
+  [1m[36mActiveRecord::SchemaMigration Load (0.4ms)[0m  [1mSELECT "schema_migrations".* FROM "schema_migrations"[0m
+  [1m[35m (0.2ms)[0m  BEGIN
+  [1m[36mUser Exists (0.7ms)[0m  [1mSELECT  1 AS one FROM "users" WHERE LOWER("users"."login") = LOWER('admin') LIMIT 1[0m
+  [1m[35mUser Exists (0.3ms)[0m  SELECT  1 AS one FROM "users" WHERE LOWER("users"."email") = LOWER('admin@example.com') LIMIT 1
+  [1m[36mSQL (0.4ms)[0m  [1mINSERT INTO "users" ("login", "administrator", "email", "legitimate_student", "salt", "password_hash", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING "id"[0m  [["login", "admin"], ["administrator", "t"], ["email", "admin@example.com"], ["legitimate_student", "f"], ["salt", "a59a2be75043c7bc89c0105d3880005dc6e4dc742fdbcb43feb5805e82850808"], ["password_hash", "86cebf84dd80982e84b998b93fd1352f53d9a6f53a688cc840aee348c2fe89f0"], ["created_at", "2018-02-23 22:51:59.369823"], ["updated_at", "2018-02-23 22:51:59.369823"]]
+  [1m[35m (1.4ms)[0m  COMMIT
+  [1m[36m (0.2ms)[0m  [1mBEGIN[0m
+  [1m[35mUser Exists (0.3ms)[0m  SELECT  1 AS one FROM "users" WHERE LOWER("users"."login") = LOWER('test') LIMIT 1
+  [1m[36mUser Exists (0.3ms)[0m  [1mSELECT  1 AS one FROM "users" WHERE LOWER("users"."email") = LOWER('test@example.com') LIMIT 1[0m
+  [1m[35mSQL (0.3ms)[0m  INSERT INTO "users" ("login", "email", "salt", "password_hash", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6) RETURNING "id"  [["login", "test"], ["email", "test@example.com"], ["salt", "b3f35638822b5afae6aff1d96b2cd8fafb5b25a05b67367cb3aae4dcface1f3c"], ["password_hash", "8b316391b5680cf92d6914fc92db55331fce2df09af440e92a8378e0becaa78d"], ["created_at", "2018-02-23 22:51:59.377253"], ["updated_at", "2018-02-23 22:51:59.377253"]]
+  [1m[36m (1.5ms)[0m  [1mCOMMIT[0m
+  [1m[36m (216.4ms)[0m  [1mDROP DATABASE IF EXISTS "tmc-development"[0m
+  [1m[35m (119.4ms)[0m  DROP DATABASE IF EXISTS "tmc-test"
+  [1m[36m (764.4ms)[0m  [1mCREATE DATABASE "tmc-development" ENCODING = 'utf8'[0m
+  [1m[35m (719.0ms)[0m  CREATE DATABASE "tmc-test" ENCODING = 'utf8'
+  [1m[36mSQL (1.8ms)[0m  [1mCREATE EXTENSION IF NOT EXISTS "plpgsql"[0m
+  [1m[35m (16.3ms)[0m  CREATE TABLE "action_tokens" ("id" serial primary key, "user_id" integer NOT NULL, "token" character varying NOT NULL, "created_at" timestamp NOT NULL, "action" integer NOT NULL, "expires_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (9.3ms)[0m  [1mCREATE TABLE "assistantships" ("id" serial primary key, "user_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (8.1ms)[0m  CREATE UNIQUE INDEX  "index_assistantships_on_user_id_and_course_id" ON "assistantships" USING btree ("user_id", "course_id")
+  [1m[36m (11.8ms)[0m  [1mCREATE TABLE "available_points" ("id" serial primary key, "exercise_id" integer NOT NULL, "name" character varying NOT NULL, "requires_review" boolean DEFAULT 'f' NOT NULL) [0m
+  [1m[35m (4.4ms)[0m  CREATE UNIQUE INDEX  "index_available_points_on_exercise_id_and_name" ON "available_points" USING btree ("exercise_id", "name")
+  [1m[36m (7.6ms)[0m  [1mCREATE TABLE "awarded_points" ("id" serial primary key, "course_id" integer NOT NULL, "user_id" integer NOT NULL, "submission_id" integer, "name" character varying NOT NULL, "created_at" timestamp) [0m
+  [1m[35m (2.9ms)[0m  CREATE UNIQUE INDEX  "index_awarded_points_on_course_id_and_user_id_and_name" ON "awarded_points" USING btree ("course_id", "user_id", "name")
+  [1m[36m (3.7ms)[0m  [1mCREATE  INDEX  "index_awarded_points_on_course_id_and_user_id_and_submission_id" ON "awarded_points" USING btree ("course_id", "user_id", "submission_id")[0m
+  [1m[35m (5.5ms)[0m  CREATE UNIQUE INDEX  "index_awarded_points_on_user_id_and_submission_id_and_name" ON "awarded_points" USING btree ("user_id", "submission_id", "name")
+  [1m[36m (7.4ms)[0m  [1mCREATE TABLE "certificates" ("id" serial primary key, "name" character varying, "pdf" bytea, "user_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (7.1ms)[0m  CREATE TABLE "course_notifications" ("id" serial primary key, "topic" character varying, "message" character varying, "sender_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (8.4ms)[0m  [1mCREATE TABLE "course_templates" ("id" serial primary key, "name" character varying, "title" character varying, "description" character varying, "material_url" character varying, "source_url" character varying, "dummy" boolean DEFAULT 'f' NOT NULL, "hidden" boolean DEFAULT 'f', "cache_version" integer DEFAULT 0 NOT NULL, "source_backend" character varying DEFAULT 'git' NOT NULL, "git_branch" character varying DEFAULT 'master' NOT NULL, "expires_at" timestamp, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (27.1ms)[0m  CREATE TABLE "courses" ("id" serial primary key, "name" character varying, "created_at" timestamp, "updated_at" timestamp, "hide_after" timestamp, "hidden" boolean DEFAULT 'f' NOT NULL, "cache_version" integer DEFAULT 0 NOT NULL, "spreadsheet_key" character varying, "hidden_if_registered_after" timestamp, "refreshed_at" timestamp, "locked_exercise_points_visible" boolean DEFAULT 't' NOT NULL, "description" text, "paste_visibility" character varying, "formal_name" character varying, "certificate_downloadable" boolean DEFAULT 'f' NOT NULL, "certificate_unlock_spec" character varying, "organization_id" integer, "disabled_status" integer DEFAULT 1, "title" character varying, "material_url" character varying, "course_template_id" integer NOT NULL, "hide_submission_results" boolean DEFAULT 'f', "external_scoreboard_url" character varying, "initial_refresh_ready" boolean DEFAULT 'f', "hide_submissions" boolean DEFAULT 'f' NOT NULL) 
+  [1m[36m (3.7ms)[0m  [1mCREATE  INDEX  "index_courses_on_organization_id" ON "courses" USING btree ("organization_id")[0m
+  [1m[35m (6.8ms)[0m  CREATE TABLE "exercises" ("id" serial primary key, "name" character varying, "created_at" timestamp, "updated_at" timestamp, "course_id" integer, "publish_time" timestamp, "gdocs_sheet" character varying, "hidden" boolean DEFAULT 'f' NOT NULL, "returnable_forced" boolean, "checksum" character varying DEFAULT '' NOT NULL, "solution_visible_after" timestamp, "has_tests" boolean DEFAULT 'f' NOT NULL, "deadline_spec" text, "unlock_spec" text, "runtime_params" character varying DEFAULT '[]' NOT NULL, "valgrind_strategy" character varying, "code_review_requests_enabled" boolean DEFAULT 'f' NOT NULL, "run_tests_locally_action_enabled" boolean DEFAULT 't' NOT NULL, "soft_deadline_spec" text, "disabled_status" integer DEFAULT 0, "hide_submission_results" boolean DEFAULT 'f') 
+  [1m[36m (3.3ms)[0m  [1mCREATE UNIQUE INDEX  "index_exercises_on_course_id_and_name" ON "exercises" USING btree ("course_id", "name")[0m
+  [1m[35m (3.1ms)[0m  CREATE  INDEX  "index_exercises_on_gdocs_sheet" ON "exercises" USING btree ("gdocs_sheet")
+  [1m[36m (8.7ms)[0m  [1mCREATE TABLE "feedback_answers" ("id" serial primary key, "feedback_question_id" integer NOT NULL, "course_id" integer NOT NULL, "exercise_name" character varying NOT NULL, "submission_id" integer, "answer" text NOT NULL, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.3ms)[0m  CREATE  INDEX  "index_feedback_answers_question_course_exercise" ON "feedback_answers" USING btree ("feedback_question_id", "course_id", "exercise_name")
+  [1m[36m (2.8ms)[0m  [1mCREATE  INDEX  "index_feedback_answers_question" ON "feedback_answers" USING btree ("submission_id")[0m
+  [1m[35m (6.5ms)[0m  CREATE TABLE "feedback_questions" ("id" serial primary key, "course_id" integer NOT NULL, "question" text NOT NULL, "kind" character varying NOT NULL, "created_at" timestamp, "updated_at" timestamp, "position" integer NOT NULL, "title" text) 
+  [1m[36m (1.9ms)[0m  [1mCREATE TABLE "migrated_submissions" ("from_course_id" integer, "to_course_id" integer, "original_submission_id" integer, "new_submission_id" integer, "created_at" timestamp NOT NULL, "updated_at" timestamp NOT NULL) [0m
+  [1m[35m (5.4ms)[0m  CREATE UNIQUE INDEX  "unique_values" ON "migrated_submissions" USING btree ("from_course_id", "to_course_id", "original_submission_id", "new_submission_id")
+  [1m[36m (6.8ms)[0m  [1mCREATE TABLE "oauth_access_grants" ("id" serial primary key, "resource_owner_id" integer NOT NULL, "application_id" integer NOT NULL, "token" character varying NOT NULL, "expires_in" integer NOT NULL, "redirect_uri" text NOT NULL, "created_at" timestamp NOT NULL, "revoked_at" timestamp, "scopes" character varying) [0m
+  [1m[35m (3.7ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_grants_on_token" ON "oauth_access_grants" USING btree ("token")
+  [1m[36m (6.3ms)[0m  [1mCREATE TABLE "oauth_access_tokens" ("id" serial primary key, "resource_owner_id" integer, "application_id" integer, "token" character varying NOT NULL, "refresh_token" character varying, "expires_in" integer, "revoked_at" timestamp, "created_at" timestamp NOT NULL, "scopes" character varying) [0m
+  [1m[35m (3.8ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_tokens_on_refresh_token" ON "oauth_access_tokens" USING btree ("refresh_token")
+  [1m[36m (224.5ms)[0m  [1mCREATE  INDEX  "index_oauth_access_tokens_on_resource_owner_id" ON "oauth_access_tokens" USING btree ("resource_owner_id")[0m
+  [1m[35m (11.8ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_tokens_on_token" ON "oauth_access_tokens" USING btree ("token")
+  [1m[36m (12.9ms)[0m  [1mCREATE TABLE "oauth_applications" ("id" serial primary key, "name" character varying NOT NULL, "uid" character varying NOT NULL, "secret" character varying NOT NULL, "redirect_uri" text NOT NULL, "scopes" character varying DEFAULT '' NOT NULL, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (7.4ms)[0m  CREATE UNIQUE INDEX  "index_oauth_applications_on_uid" ON "oauth_applications" USING btree ("uid")
+  [1m[36m (8.7ms)[0m  [1mCREATE TABLE "organizations" ("id" serial primary key, "name" character varying, "information" character varying, "slug" character varying, "verified_at" timestamp, "verified" boolean, "disabled" boolean DEFAULT 'f' NOT NULL, "disabled_reason" character varying, "created_at" timestamp, "updated_at" timestamp, "hidden" boolean DEFAULT 'f', "creator_id" integer, "logo_file_name" character varying, "logo_content_type" character varying, "logo_file_size" integer, "logo_updated_at" timestamp, "phone" character varying, "contact_information" text, "email" character varying, "website" text, "pinned" boolean DEFAULT 'f' NOT NULL) [0m
+  [1m[35m (6.3ms)[0m  CREATE TABLE "points_upload_queues" ("id" serial primary key, "point_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (8.5ms)[0m  [1mCREATE TABLE "reply_to_feedback_answers" ("id" serial primary key, "feedback_answer_id" integer, "body" text, "from" character varying, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (8.1ms)[0m  CREATE TABLE "reviews" ("id" serial primary key, "submission_id" integer NOT NULL, "reviewer_id" integer, "review_body" text NOT NULL, "created_at" timestamp, "updated_at" timestamp, "points" text, "marked_as_read" boolean DEFAULT 'f' NOT NULL) 
+  [1m[36m (4.7ms)[0m  [1mCREATE  INDEX  "index_reviews_on_reviewer_id" ON "reviews" USING btree ("reviewer_id")[0m
+  [1m[35m (4.0ms)[0m  CREATE  INDEX  "index_reviews_on_submission_id" ON "reviews" USING btree ("submission_id")
+  [1m[36m (9.5ms)[0m  [1mCREATE TABLE "sessions" ("id" serial primary key, "session_id" character varying NOT NULL, "data" text, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.9ms)[0m  CREATE  INDEX  "index_sessions_on_session_id" ON "sessions" USING btree ("session_id")
+  [1m[36m (6.1ms)[0m  [1mCREATE  INDEX  "index_sessions_on_updated_at" ON "sessions" USING btree ("updated_at")[0m
+  [1m[35m (7.6ms)[0m  CREATE TABLE "submission_data" ("submission_id" serial primary key, "return_file" bytea, "stdout_compressed" bytea, "stderr_compressed" bytea, "vm_log_compressed" bytea, "valgrind_compressed" bytea, "validations_compressed" bytea) 
+  [1m[36m (23.7ms)[0m  [1mCREATE TABLE "submissions" ("id" serial primary key, "user_id" integer, "pretest_error" text, "created_at" timestamp, "updated_at" timestamp, "exercise_name" character varying NOT NULL, "course_id" integer NOT NULL, "processed" boolean DEFAULT 'f' NOT NULL, "secret_token" character varying, "all_tests_passed" boolean DEFAULT 'f' NOT NULL, "points" text, "processing_tried_at" timestamp, "processing_began_at" timestamp, "processing_completed_at" timestamp, "times_sent_to_sandbox" integer DEFAULT 0 NOT NULL, "processing_attempts_started_at" timestamp, "processing_priority" integer DEFAULT 0 NOT NULL, "stdout_compressed" bytea, "stderr_compressed" bytea, "params_json" text, "requires_review" boolean DEFAULT 'f' NOT NULL, "requests_review" boolean DEFAULT 'f' NOT NULL, "reviewed" boolean DEFAULT 'f' NOT NULL, "message_for_reviewer" text DEFAULT '' NOT NULL, "newer_submission_reviewed" boolean DEFAULT 'f' NOT NULL, "review_dismissed" boolean DEFAULT 'f' NOT NULL, "paste_available" boolean DEFAULT 'f' NOT NULL, "message_for_paste" text, "paste_key" character varying, "client_time" timestamp, "client_nanotime" bigint, "client_ip" text, "sandbox" character varying) [0m
+  [1m[35m (4.0ms)[0m  CREATE  INDEX  "index_submissions_on_course_id_and_exercise_name" ON "submissions" USING btree ("course_id", "exercise_name")
+  [1m[36m (4.6ms)[0m  [1mCREATE  INDEX  "index_submissions_on_course_id_and_user_id" ON "submissions" USING btree ("course_id", "user_id")[0m
+  [1m[35m (3.6ms)[0m  CREATE  INDEX  "index_submissions_on_processed" ON "submissions" USING btree ("processed")
+  [1m[36m (3.4ms)[0m  [1mCREATE  INDEX  "index_submissions_on_user_id_and_exercise_name" ON "submissions" USING btree ("user_id", "exercise_name")[0m
+  [1m[35m (5.5ms)[0m  CREATE TABLE "teacherships" ("id" serial primary key, "user_id" integer, "organization_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (3.1ms)[0m  [1mCREATE UNIQUE INDEX  "index_teacherships_on_user_id_and_organization_id" ON "teacherships" USING btree ("user_id", "organization_id")[0m
+  [1m[35m (7.9ms)[0m  CREATE TABLE "test_case_runs" ("id" serial primary key, "submission_id" integer, "test_case_name" text, "message" text, "successful" boolean, "created_at" timestamp, "updated_at" timestamp, "exception" text, "detailed_message" text) 
+  [1m[36m (3.7ms)[0m  [1mCREATE  INDEX  "index_test_case_runs_on_submission_id" ON "test_case_runs" USING btree ("submission_id")[0m
+  [1m[35m (7.4ms)[0m  CREATE TABLE "test_scanner_cache_entries" ("id" serial primary key, "course_id" integer NOT NULL, "exercise_name" character varying, "files_hash" character varying, "value" text, "created_at" timestamp) 
+  [1m[36m (3.3ms)[0m  [1mCREATE UNIQUE INDEX  "index_test_scanner_cache_entries_on_course_id_and_exercise_name" ON "test_scanner_cache_entries" USING btree ("course_id", "exercise_name")[0m
+  [1m[35m (3.5ms)[0m  CREATE TABLE "uncomputed_unlocks" ("id" serial primary key, "course_id" integer NOT NULL, "user_id" integer NOT NULL, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (4.3ms)[0m  [1mCREATE  INDEX  "index_uncomputed_unlocks_on_course_id_and_user_id" ON "uncomputed_unlocks" USING btree ("course_id", "user_id")[0m
+  [1m[35m (7.5ms)[0m  CREATE TABLE "unlocks" ("id" serial primary key, "user_id" integer NOT NULL, "course_id" integer NOT NULL, "exercise_name" character varying NOT NULL, "valid_after" timestamp, "created_at" timestamp NOT NULL) 
+  [1m[36m (3.6ms)[0m  [1mCREATE UNIQUE INDEX  "index_unlocks_on_user_id_and_course_id_and_exercise_name" ON "unlocks" USING btree ("user_id", "course_id", "exercise_name")[0m
+  [1m[35m (7.4ms)[0m  CREATE TABLE "user_field_values" ("id" serial primary key, "user_id" integer NOT NULL, "field_name" character varying NOT NULL, "value" text NOT NULL, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (3.6ms)[0m  [1mCREATE UNIQUE INDEX  "index_user_field_values_on_user_id_and_field_name" ON "user_field_values" USING btree ("user_id", "field_name")[0m
+  [1m[35m (7.1ms)[0m  CREATE TABLE "users" ("id" serial primary key, "login" character varying NOT NULL, "password_hash" text, "created_at" timestamp, "updated_at" timestamp, "salt" character varying, "administrator" boolean DEFAULT 'f' NOT NULL, "email" text DEFAULT '' NOT NULL, "legitimate_student" boolean DEFAULT 't' NOT NULL) 
+  [1m[36m (3.6ms)[0m  [1mCREATE UNIQUE INDEX  "index_users_on_login" ON "users" USING btree ("login")[0m
+  [1m[35m (3.8ms)[0m  ALTER TABLE "action_tokens" ADD CONSTRAINT "fk_rails_663c57806d"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.6ms)[0m  [1mALTER TABLE "available_points" ADD CONSTRAINT "fk_rails_5c4b9d52bb"
+FOREIGN KEY ("exercise_id")
+  REFERENCES "exercises" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.7ms)[0m  ALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_c73c8dda3d"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.4ms)[0m  [1mALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_54a884b931"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE SET NULL[0m
+  [1m[35m (2.2ms)[0m  ALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_7e6a5f6efc"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (3.2ms)[0m  [1mALTER TABLE "courses" ADD CONSTRAINT "fk_rails_dc0926a4d4"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+[0m
+  [1m[35m (2.4ms)[0m  ALTER TABLE "exercises" ADD CONSTRAINT "fk_rails_41b1911302"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (13.4ms)[0m  [1mALTER TABLE "feedback_answers" ADD CONSTRAINT "fk_rails_0615442e63"
+FOREIGN KEY ("feedback_question_id")
+  REFERENCES "feedback_questions" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.3ms)[0m  ALTER TABLE "feedback_answers" ADD CONSTRAINT "fk_rails_3304bbd0a0"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE SET NULL
+  [1m[36m (2.1ms)[0m  [1mALTER TABLE "feedback_questions" ADD CONSTRAINT "fk_rails_99e220604d"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.3ms)[0m  ALTER TABLE "reviews" ADD CONSTRAINT "fk_rails_75ee3b2fca"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.5ms)[0m  [1mALTER TABLE "reviews" ADD CONSTRAINT "fk_rails_007031d9cb"
+FOREIGN KEY ("reviewer_id")
+  REFERENCES "users" ("id")
+[0m
+  [1m[35m (2.9ms)[0m  ALTER TABLE "submission_data" ADD CONSTRAINT "fk_rails_0b38a74c44"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.5ms)[0m  [1mALTER TABLE "submissions" ADD CONSTRAINT "fk_rails_bcaf91aef8"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.2ms)[0m  ALTER TABLE "submissions" ADD CONSTRAINT "fk_rails_8d85741475"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.2ms)[0m  [1mALTER TABLE "test_case_runs" ADD CONSTRAINT "fk_rails_acf794ad02"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.4ms)[0m  ALTER TABLE "test_scanner_cache_entries" ADD CONSTRAINT "fk_rails_5047ff1d79"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.5ms)[0m  [1mALTER TABLE "user_field_values" ADD CONSTRAINT "fk_rails_2f99f81f2b"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (4.8ms)[0m  CREATE TABLE "schema_migrations" ("version" character varying NOT NULL) 
+  [1m[36m (3.2ms)[0m  [1mCREATE UNIQUE INDEX  "unique_schema_migrations" ON "schema_migrations"  ("version")[0m
+  [1m[35m (0.4ms)[0m  SELECT version FROM "schema_migrations"
+  [1m[36m (1.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170809122816')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120110110549')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150625081825')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20161024122339')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120918101917')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170502055142')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130825165613')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120127224356')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150625081824')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150518100837')
+  [1m[36m (1.5ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170406120012')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141006185055')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126174124')[0m
+  [1m[35m (1.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120913102113')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121005102836')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140816195048')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140108131242')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170406111540')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121005143551')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150609074523')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120113120508')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20110926205045')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121001132051')[0m
+  [1m[35m (1.6ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150625081826')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130204075719')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121114110119')
+  [1m[36m (1.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130812070259')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170103094247')
+  [1m[36m (1.5ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130312123338')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120519162832')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120116114808')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120508093025')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120117231925')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150727080941')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170317082016')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120116233637')
+  [1m[36m (1.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120125044449')[0m
+  [1m[35m (1.6ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140809195619')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150727080841')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120616095759')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111219180842')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160804120140')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20160214132532')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130130232222')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120929023553')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120917104257')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126174157')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150625081827')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130125013607')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130812064400')
+  [1m[36m (1.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150612072207')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150408121203')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121113223514')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120615225538')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20141008212356')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140112141119')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130819104237')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120911152429')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120214103259')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20131219195546')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140519103112')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130419131100')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126233917')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150817095112')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20160309101401')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121005110310')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150207223237')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160310111733')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150702084350')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140921155940')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121117155534')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111215084407')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150608100828')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150527103134')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120201045735')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111028045923')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20151126104102')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120926005853')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121209082131')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120128181256')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126173543')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130415103348')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120210064351')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111025123030')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121117121310')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120212110218')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120917132431')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150519110114')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140810120233')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130426215042')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130419110330')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120203165326')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150611073002')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120318214231')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140112023830')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130202213330')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111109140507')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160302150252')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120123064427')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140116183756')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170126122618')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111115154221')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111020105937')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141007201230')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120930115922')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120128174046')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150701054936')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141124122855')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150222171258')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120206141225')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126002231')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130131220459')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121026060109')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120202060641')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130212001309')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150323152247')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120616103525')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120201051238')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20141007203417')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130916190007')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120924110353')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160304123259')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120926143255')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121002184737')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120620134550')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120403080704')
+  [1m[36mSQL (0.4ms)[0m  [1mCREATE EXTENSION IF NOT EXISTS "plpgsql"[0m
+  [1m[35m (8.7ms)[0m  CREATE TABLE "action_tokens" ("id" serial primary key, "user_id" integer NOT NULL, "token" character varying NOT NULL, "created_at" timestamp NOT NULL, "action" integer NOT NULL, "expires_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (6.1ms)[0m  [1mCREATE TABLE "assistantships" ("id" serial primary key, "user_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.7ms)[0m  CREATE UNIQUE INDEX  "index_assistantships_on_user_id_and_course_id" ON "assistantships" USING btree ("user_id", "course_id")
+  [1m[36m (7.9ms)[0m  [1mCREATE TABLE "available_points" ("id" serial primary key, "exercise_id" integer NOT NULL, "name" character varying NOT NULL, "requires_review" boolean DEFAULT 'f' NOT NULL) [0m
+  [1m[35m (3.6ms)[0m  CREATE UNIQUE INDEX  "index_available_points_on_exercise_id_and_name" ON "available_points" USING btree ("exercise_id", "name")
+  [1m[36m (8.1ms)[0m  [1mCREATE TABLE "awarded_points" ("id" serial primary key, "course_id" integer NOT NULL, "user_id" integer NOT NULL, "submission_id" integer, "name" character varying NOT NULL, "created_at" timestamp) [0m
+  [1m[35m (3.8ms)[0m  CREATE UNIQUE INDEX  "index_awarded_points_on_course_id_and_user_id_and_name" ON "awarded_points" USING btree ("course_id", "user_id", "name")
+  [1m[36m (3.4ms)[0m  [1mCREATE  INDEX  "index_awarded_points_on_course_id_and_user_id_and_submission_id" ON "awarded_points" USING btree ("course_id", "user_id", "submission_id")[0m
+  [1m[35m (3.6ms)[0m  CREATE UNIQUE INDEX  "index_awarded_points_on_user_id_and_submission_id_and_name" ON "awarded_points" USING btree ("user_id", "submission_id", "name")
+  [1m[36m (6.9ms)[0m  [1mCREATE TABLE "certificates" ("id" serial primary key, "name" character varying, "pdf" bytea, "user_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (8.6ms)[0m  CREATE TABLE "course_notifications" ("id" serial primary key, "topic" character varying, "message" character varying, "sender_id" integer, "course_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (8.5ms)[0m  [1mCREATE TABLE "course_templates" ("id" serial primary key, "name" character varying, "title" character varying, "description" character varying, "material_url" character varying, "source_url" character varying, "dummy" boolean DEFAULT 'f' NOT NULL, "hidden" boolean DEFAULT 'f', "cache_version" integer DEFAULT 0 NOT NULL, "source_backend" character varying DEFAULT 'git' NOT NULL, "git_branch" character varying DEFAULT 'master' NOT NULL, "expires_at" timestamp, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (9.7ms)[0m  CREATE TABLE "courses" ("id" serial primary key, "name" character varying, "created_at" timestamp, "updated_at" timestamp, "hide_after" timestamp, "hidden" boolean DEFAULT 'f' NOT NULL, "cache_version" integer DEFAULT 0 NOT NULL, "spreadsheet_key" character varying, "hidden_if_registered_after" timestamp, "refreshed_at" timestamp, "locked_exercise_points_visible" boolean DEFAULT 't' NOT NULL, "description" text, "paste_visibility" character varying, "formal_name" character varying, "certificate_downloadable" boolean DEFAULT 'f' NOT NULL, "certificate_unlock_spec" character varying, "organization_id" integer, "disabled_status" integer DEFAULT 1, "title" character varying, "material_url" character varying, "course_template_id" integer NOT NULL, "hide_submission_results" boolean DEFAULT 'f', "external_scoreboard_url" character varying, "initial_refresh_ready" boolean DEFAULT 'f', "hide_submissions" boolean DEFAULT 'f' NOT NULL) 
+  [1m[36m (4.4ms)[0m  [1mCREATE  INDEX  "index_courses_on_organization_id" ON "courses" USING btree ("organization_id")[0m
+  [1m[35m (8.4ms)[0m  CREATE TABLE "exercises" ("id" serial primary key, "name" character varying, "created_at" timestamp, "updated_at" timestamp, "course_id" integer, "publish_time" timestamp, "gdocs_sheet" character varying, "hidden" boolean DEFAULT 'f' NOT NULL, "returnable_forced" boolean, "checksum" character varying DEFAULT '' NOT NULL, "solution_visible_after" timestamp, "has_tests" boolean DEFAULT 'f' NOT NULL, "deadline_spec" text, "unlock_spec" text, "runtime_params" character varying DEFAULT '[]' NOT NULL, "valgrind_strategy" character varying, "code_review_requests_enabled" boolean DEFAULT 'f' NOT NULL, "run_tests_locally_action_enabled" boolean DEFAULT 't' NOT NULL, "soft_deadline_spec" text, "disabled_status" integer DEFAULT 0, "hide_submission_results" boolean DEFAULT 'f') 
+  [1m[36m (3.5ms)[0m  [1mCREATE UNIQUE INDEX  "index_exercises_on_course_id_and_name" ON "exercises" USING btree ("course_id", "name")[0m
+  [1m[35m (5.6ms)[0m  CREATE  INDEX  "index_exercises_on_gdocs_sheet" ON "exercises" USING btree ("gdocs_sheet")
+  [1m[36m (8.4ms)[0m  [1mCREATE TABLE "feedback_answers" ("id" serial primary key, "feedback_question_id" integer NOT NULL, "course_id" integer NOT NULL, "exercise_name" character varying NOT NULL, "submission_id" integer, "answer" text NOT NULL, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (4.9ms)[0m  CREATE  INDEX  "index_feedback_answers_question_course_exercise" ON "feedback_answers" USING btree ("feedback_question_id", "course_id", "exercise_name")
+  [1m[36m (2.9ms)[0m  [1mCREATE  INDEX  "index_feedback_answers_question" ON "feedback_answers" USING btree ("submission_id")[0m
+  [1m[35m (10.5ms)[0m  CREATE TABLE "feedback_questions" ("id" serial primary key, "course_id" integer NOT NULL, "question" text NOT NULL, "kind" character varying NOT NULL, "created_at" timestamp, "updated_at" timestamp, "position" integer NOT NULL, "title" text) 
+  [1m[36m (1.8ms)[0m  [1mCREATE TABLE "migrated_submissions" ("from_course_id" integer, "to_course_id" integer, "original_submission_id" integer, "new_submission_id" integer, "created_at" timestamp NOT NULL, "updated_at" timestamp NOT NULL) [0m
+  [1m[35m (4.2ms)[0m  CREATE UNIQUE INDEX  "unique_values" ON "migrated_submissions" USING btree ("from_course_id", "to_course_id", "original_submission_id", "new_submission_id")
+  [1m[36m (8.3ms)[0m  [1mCREATE TABLE "oauth_access_grants" ("id" serial primary key, "resource_owner_id" integer NOT NULL, "application_id" integer NOT NULL, "token" character varying NOT NULL, "expires_in" integer NOT NULL, "redirect_uri" text NOT NULL, "created_at" timestamp NOT NULL, "revoked_at" timestamp, "scopes" character varying) [0m
+  [1m[35m (4.8ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_grants_on_token" ON "oauth_access_grants" USING btree ("token")
+  [1m[36m (8.5ms)[0m  [1mCREATE TABLE "oauth_access_tokens" ("id" serial primary key, "resource_owner_id" integer, "application_id" integer, "token" character varying NOT NULL, "refresh_token" character varying, "expires_in" integer, "revoked_at" timestamp, "created_at" timestamp NOT NULL, "scopes" character varying) [0m
+  [1m[35m (4.0ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_tokens_on_refresh_token" ON "oauth_access_tokens" USING btree ("refresh_token")
+  [1m[36m (4.6ms)[0m  [1mCREATE  INDEX  "index_oauth_access_tokens_on_resource_owner_id" ON "oauth_access_tokens" USING btree ("resource_owner_id")[0m
+  [1m[35m (3.9ms)[0m  CREATE UNIQUE INDEX  "index_oauth_access_tokens_on_token" ON "oauth_access_tokens" USING btree ("token")
+  [1m[36m (9.2ms)[0m  [1mCREATE TABLE "oauth_applications" ("id" serial primary key, "name" character varying NOT NULL, "uid" character varying NOT NULL, "secret" character varying NOT NULL, "redirect_uri" text NOT NULL, "scopes" character varying DEFAULT '' NOT NULL, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (4.1ms)[0m  CREATE UNIQUE INDEX  "index_oauth_applications_on_uid" ON "oauth_applications" USING btree ("uid")
+  [1m[36m (9.1ms)[0m  [1mCREATE TABLE "organizations" ("id" serial primary key, "name" character varying, "information" character varying, "slug" character varying, "verified_at" timestamp, "verified" boolean, "disabled" boolean DEFAULT 'f' NOT NULL, "disabled_reason" character varying, "created_at" timestamp, "updated_at" timestamp, "hidden" boolean DEFAULT 'f', "creator_id" integer, "logo_file_name" character varying, "logo_content_type" character varying, "logo_file_size" integer, "logo_updated_at" timestamp, "phone" character varying, "contact_information" text, "email" character varying, "website" text, "pinned" boolean DEFAULT 'f' NOT NULL) [0m
+  [1m[35m (5.8ms)[0m  CREATE TABLE "points_upload_queues" ("id" serial primary key, "point_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (41.0ms)[0m  [1mCREATE TABLE "reply_to_feedback_answers" ("id" serial primary key, "feedback_answer_id" integer, "body" text, "from" character varying, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (5.7ms)[0m  CREATE TABLE "reviews" ("id" serial primary key, "submission_id" integer NOT NULL, "reviewer_id" integer, "review_body" text NOT NULL, "created_at" timestamp, "updated_at" timestamp, "points" text, "marked_as_read" boolean DEFAULT 'f' NOT NULL) 
+  [1m[36m (3.6ms)[0m  [1mCREATE  INDEX  "index_reviews_on_reviewer_id" ON "reviews" USING btree ("reviewer_id")[0m
+  [1m[35m (4.1ms)[0m  CREATE  INDEX  "index_reviews_on_submission_id" ON "reviews" USING btree ("submission_id")
+  [1m[36m (6.1ms)[0m  [1mCREATE TABLE "sessions" ("id" serial primary key, "session_id" character varying NOT NULL, "data" text, "created_at" timestamp, "updated_at" timestamp) [0m
+  [1m[35m (3.0ms)[0m  CREATE  INDEX  "index_sessions_on_session_id" ON "sessions" USING btree ("session_id")
+  [1m[36m (3.4ms)[0m  [1mCREATE  INDEX  "index_sessions_on_updated_at" ON "sessions" USING btree ("updated_at")[0m
+  [1m[35m (36.5ms)[0m  CREATE TABLE "submission_data" ("submission_id" serial primary key, "return_file" bytea, "stdout_compressed" bytea, "stderr_compressed" bytea, "vm_log_compressed" bytea, "valgrind_compressed" bytea, "validations_compressed" bytea) 
+  [1m[36m (13.8ms)[0m  [1mCREATE TABLE "submissions" ("id" serial primary key, "user_id" integer, "pretest_error" text, "created_at" timestamp, "updated_at" timestamp, "exercise_name" character varying NOT NULL, "course_id" integer NOT NULL, "processed" boolean DEFAULT 'f' NOT NULL, "secret_token" character varying, "all_tests_passed" boolean DEFAULT 'f' NOT NULL, "points" text, "processing_tried_at" timestamp, "processing_began_at" timestamp, "processing_completed_at" timestamp, "times_sent_to_sandbox" integer DEFAULT 0 NOT NULL, "processing_attempts_started_at" timestamp, "processing_priority" integer DEFAULT 0 NOT NULL, "stdout_compressed" bytea, "stderr_compressed" bytea, "params_json" text, "requires_review" boolean DEFAULT 'f' NOT NULL, "requests_review" boolean DEFAULT 'f' NOT NULL, "reviewed" boolean DEFAULT 'f' NOT NULL, "message_for_reviewer" text DEFAULT '' NOT NULL, "newer_submission_reviewed" boolean DEFAULT 'f' NOT NULL, "review_dismissed" boolean DEFAULT 'f' NOT NULL, "paste_available" boolean DEFAULT 'f' NOT NULL, "message_for_paste" text, "paste_key" character varying, "client_time" timestamp, "client_nanotime" bigint, "client_ip" text, "sandbox" character varying) [0m
+  [1m[35m (6.4ms)[0m  CREATE  INDEX  "index_submissions_on_course_id_and_exercise_name" ON "submissions" USING btree ("course_id", "exercise_name")
+  [1m[36m (6.1ms)[0m  [1mCREATE  INDEX  "index_submissions_on_course_id_and_user_id" ON "submissions" USING btree ("course_id", "user_id")[0m
+  [1m[35m (39.5ms)[0m  CREATE  INDEX  "index_submissions_on_processed" ON "submissions" USING btree ("processed")
+  [1m[36m (4.8ms)[0m  [1mCREATE  INDEX  "index_submissions_on_user_id_and_exercise_name" ON "submissions" USING btree ("user_id", "exercise_name")[0m
+  [1m[35m (5.7ms)[0m  CREATE TABLE "teacherships" ("id" serial primary key, "user_id" integer, "organization_id" integer, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (3.7ms)[0m  [1mCREATE UNIQUE INDEX  "index_teacherships_on_user_id_and_organization_id" ON "teacherships" USING btree ("user_id", "organization_id")[0m
+  [1m[35m (8.3ms)[0m  CREATE TABLE "test_case_runs" ("id" serial primary key, "submission_id" integer, "test_case_name" text, "message" text, "successful" boolean, "created_at" timestamp, "updated_at" timestamp, "exception" text, "detailed_message" text) 
+  [1m[36m (4.2ms)[0m  [1mCREATE  INDEX  "index_test_case_runs_on_submission_id" ON "test_case_runs" USING btree ("submission_id")[0m
+  [1m[35m (7.4ms)[0m  CREATE TABLE "test_scanner_cache_entries" ("id" serial primary key, "course_id" integer NOT NULL, "exercise_name" character varying, "files_hash" character varying, "value" text, "created_at" timestamp) 
+  [1m[36m (4.8ms)[0m  [1mCREATE UNIQUE INDEX  "index_test_scanner_cache_entries_on_course_id_and_exercise_name" ON "test_scanner_cache_entries" USING btree ("course_id", "exercise_name")[0m
+  [1m[35m (6.7ms)[0m  CREATE TABLE "uncomputed_unlocks" ("id" serial primary key, "course_id" integer NOT NULL, "user_id" integer NOT NULL, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (4.3ms)[0m  [1mCREATE  INDEX  "index_uncomputed_unlocks_on_course_id_and_user_id" ON "uncomputed_unlocks" USING btree ("course_id", "user_id")[0m
+  [1m[35m (9.0ms)[0m  CREATE TABLE "unlocks" ("id" serial primary key, "user_id" integer NOT NULL, "course_id" integer NOT NULL, "exercise_name" character varying NOT NULL, "valid_after" timestamp, "created_at" timestamp NOT NULL) 
+  [1m[36m (4.7ms)[0m  [1mCREATE UNIQUE INDEX  "index_unlocks_on_user_id_and_course_id_and_exercise_name" ON "unlocks" USING btree ("user_id", "course_id", "exercise_name")[0m
+  [1m[35m (9.1ms)[0m  CREATE TABLE "user_field_values" ("id" serial primary key, "user_id" integer NOT NULL, "field_name" character varying NOT NULL, "value" text NOT NULL, "created_at" timestamp, "updated_at" timestamp) 
+  [1m[36m (104.2ms)[0m  [1mCREATE UNIQUE INDEX  "index_user_field_values_on_user_id_and_field_name" ON "user_field_values" USING btree ("user_id", "field_name")[0m
+  [1m[35m (15.5ms)[0m  CREATE TABLE "users" ("id" serial primary key, "login" character varying NOT NULL, "password_hash" text, "created_at" timestamp, "updated_at" timestamp, "salt" character varying, "administrator" boolean DEFAULT 'f' NOT NULL, "email" text DEFAULT '' NOT NULL, "legitimate_student" boolean DEFAULT 't' NOT NULL) 
+  [1m[36m (5.4ms)[0m  [1mCREATE UNIQUE INDEX  "index_users_on_login" ON "users" USING btree ("login")[0m
+  [1m[35m (3.3ms)[0m  ALTER TABLE "action_tokens" ADD CONSTRAINT "fk_rails_663c57806d"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (4.5ms)[0m  [1mALTER TABLE "available_points" ADD CONSTRAINT "fk_rails_5c4b9d52bb"
+FOREIGN KEY ("exercise_id")
+  REFERENCES "exercises" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.4ms)[0m  ALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_c73c8dda3d"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.8ms)[0m  [1mALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_54a884b931"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE SET NULL[0m
+  [1m[35m (2.3ms)[0m  ALTER TABLE "awarded_points" ADD CONSTRAINT "fk_rails_7e6a5f6efc"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.7ms)[0m  [1mALTER TABLE "courses" ADD CONSTRAINT "fk_rails_dc0926a4d4"
+FOREIGN KEY ("organization_id")
+  REFERENCES "organizations" ("id")
+[0m
+  [1m[35m (2.4ms)[0m  ALTER TABLE "exercises" ADD CONSTRAINT "fk_rails_41b1911302"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.9ms)[0m  [1mALTER TABLE "feedback_answers" ADD CONSTRAINT "fk_rails_0615442e63"
+FOREIGN KEY ("feedback_question_id")
+  REFERENCES "feedback_questions" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.9ms)[0m  ALTER TABLE "feedback_answers" ADD CONSTRAINT "fk_rails_3304bbd0a0"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE SET NULL
+  [1m[36m (2.4ms)[0m  [1mALTER TABLE "feedback_questions" ADD CONSTRAINT "fk_rails_99e220604d"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (4.2ms)[0m  ALTER TABLE "reviews" ADD CONSTRAINT "fk_rails_75ee3b2fca"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.8ms)[0m  [1mALTER TABLE "reviews" ADD CONSTRAINT "fk_rails_007031d9cb"
+FOREIGN KEY ("reviewer_id")
+  REFERENCES "users" ("id")
+[0m
+  [1m[35m (3.7ms)[0m  ALTER TABLE "submission_data" ADD CONSTRAINT "fk_rails_0b38a74c44"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.8ms)[0m  [1mALTER TABLE "submissions" ADD CONSTRAINT "fk_rails_bcaf91aef8"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.5ms)[0m  ALTER TABLE "submissions" ADD CONSTRAINT "fk_rails_8d85741475"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.4ms)[0m  [1mALTER TABLE "test_case_runs" ADD CONSTRAINT "fk_rails_acf794ad02"
+FOREIGN KEY ("submission_id")
+  REFERENCES "submissions" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (2.6ms)[0m  ALTER TABLE "test_scanner_cache_entries" ADD CONSTRAINT "fk_rails_5047ff1d79"
+FOREIGN KEY ("course_id")
+  REFERENCES "courses" ("id")
+ ON DELETE CASCADE
+  [1m[36m (2.7ms)[0m  [1mALTER TABLE "user_field_values" ADD CONSTRAINT "fk_rails_2f99f81f2b"
+FOREIGN KEY ("user_id")
+  REFERENCES "users" ("id")
+ ON DELETE CASCADE[0m
+  [1m[35m (4.4ms)[0m  CREATE TABLE "schema_migrations" ("version" character varying NOT NULL) 
+  [1m[36m (5.0ms)[0m  [1mCREATE UNIQUE INDEX  "unique_schema_migrations" ON "schema_migrations"  ("version")[0m
+  [1m[35m (0.7ms)[0m  SELECT version FROM "schema_migrations"
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170809122816')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120110110549')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150625081825')[0m
+  [1m[35m (1.5ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20161024122339')
+  [1m[36m (2.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120918101917')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170502055142')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130825165613')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120127224356')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150625081824')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150518100837')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170406120012')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141006185055')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126174124')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120913102113')
+  [1m[36m (2.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121005102836')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140816195048')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140108131242')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170406111540')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121005143551')[0m
+  [1m[35m (1.1ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150609074523')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120113120508')[0m
+  [1m[35m (1.6ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20110926205045')
+  [1m[36m (1.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121001132051')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150625081826')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130204075719')[0m
+  [1m[35m (2.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121114110119')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130812070259')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20170103094247')
+  [1m[36m (1.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130312123338')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120519162832')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120116114808')[0m
+  [1m[35m (1.6ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120508093025')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120117231925')[0m
+  [1m[35m (1.5ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150727080941')
+  [1m[36m (2.6ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170317082016')[0m
+  [1m[35m (2.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120116233637')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120125044449')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140809195619')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150727080841')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120616095759')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111219180842')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160804120140')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20160214132532')[0m
+  [1m[35m (1.7ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130130232222')
+  [1m[36m (1.5ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120929023553')[0m
+  [1m[35m (1.4ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120917104257')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126174157')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150625081827')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130125013607')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130812064400')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150612072207')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150408121203')
+  [1m[36m (0.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121113223514')[0m
+  [1m[35m (0.7ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120615225538')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20141008212356')[0m
+  [1m[35m (1.5ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140112141119')
+  [1m[36m (1.0ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130819104237')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120911152429')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120214103259')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20131219195546')
+  [1m[36m (0.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140519103112')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130419131100')
+  [1m[36m (0.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126233917')[0m
+  [1m[35m (0.7ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150817095112')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20160309101401')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121005110310')
+  [1m[36m (0.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150207223237')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160310111733')
+  [1m[36m (0.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150702084350')[0m
+  [1m[35m (0.7ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140921155940')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121117155534')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111215084407')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150608100828')[0m
+  [1m[35m (0.7ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150527103134')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120201045735')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111028045923')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20151126104102')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120926005853')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121209082131')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120128181256')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126173543')[0m
+  [1m[35m (1.2ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130415103348')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120210064351')[0m
+  [1m[35m (1.3ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111025123030')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121117121310')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120212110218')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120917132431')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150519110114')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140810120233')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130426215042')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130419110330')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120203165326')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150611073002')[0m
+  [1m[35m (0.7ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120318214231')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20140112023830')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130202213330')
+  [1m[36m (0.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111109140507')[0m
+  [1m[35m (0.7ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160302150252')
+  [1m[36m (0.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120123064427')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20140116183756')
+  [1m[36m (0.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20170126122618')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20111115154221')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20111020105937')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141007201230')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120930115922')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120128174046')
+  [1m[36m (1.4ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150701054936')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20141124122855')
+  [1m[36m (1.1ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20150222171258')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120206141225')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120126002231')[0m
+  [1m[35m (1.6ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130131220459')
+  [1m[36m (1.2ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20121026060109')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120202060641')
+  [1m[36m (1.3ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20130212001309')[0m
+  [1m[35m (0.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20150323152247')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120616103525')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120201051238')
+  [1m[36m (0.9ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20141007203417')[0m
+  [1m[35m (0.8ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20130916190007')
+  [1m[36m (0.8ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120924110353')[0m
+  [1m[35m (0.7ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20160304123259')
+  [1m[36m (0.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120926143255')[0m
+  [1m[35m (1.0ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20121002184737')
+  [1m[36m (0.7ms)[0m  [1mINSERT INTO "schema_migrations" (version) VALUES ('20120620134550')[0m
+  [1m[35m (3.9ms)[0m  INSERT INTO "schema_migrations" (version) VALUES ('20120403080704')
+  [1m[36mActiveRecord::SchemaMigration Load (0.4ms)[0m  [1mSELECT "schema_migrations".* FROM "schema_migrations"[0m
+  [1m[35m (0.3ms)[0m  BEGIN
+  [1m[36mUser Exists (0.7ms)[0m  [1mSELECT  1 AS one FROM "users" WHERE LOWER("users"."login") = LOWER('admin') LIMIT 1[0m
+  [1m[35mUser Exists (0.3ms)[0m  SELECT  1 AS one FROM "users" WHERE LOWER("users"."email") = LOWER('admin@example.com') LIMIT 1
+  [1m[36mSQL (0.4ms)[0m  [1mINSERT INTO "users" ("login", "administrator", "email", "legitimate_student", "salt", "password_hash", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING "id"[0m  [["login", "admin"], ["administrator", "t"], ["email", "admin@example.com"], ["legitimate_student", "f"], ["salt", "6acb519239388873c441bccc97d185c92d96d5b8a22c6720f6c1ff2ee08d4157"], ["password_hash", "a5a3e4dabed6c049452d356de4da4b360d38e7b29dab38c71d06b514289b885f"], ["created_at", "2018-02-23 22:52:43.038421"], ["updated_at", "2018-02-23 22:52:43.038421"]]
+  [1m[35m (1.4ms)[0m  COMMIT
+  [1m[36m (0.2ms)[0m  [1mBEGIN[0m
+  [1m[35mUser Exists (0.6ms)[0m  SELECT  1 AS one FROM "users" WHERE LOWER("users"."login") = LOWER('test') LIMIT 1
+  [1m[36mUser Exists (0.3ms)[0m  [1mSELECT  1 AS one FROM "users" WHERE LOWER("users"."email") = LOWER('test@example.com') LIMIT 1[0m
+  [1m[35mSQL (0.2ms)[0m  INSERT INTO "users" ("login", "email", "salt", "password_hash", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6) RETURNING "id"  [["login", "test"], ["email", "test@example.com"], ["salt", "45a79d2f8d3316efdd69cf6dc41a14ea965162a894394a5b6eee417b035b9256"], ["password_hash", "882cc3b86e56ca02c2bbb9f06f42c356692c519c87033cfb43cb2eb578176c6e"], ["created_at", "2018-02-23 22:52:43.046648"], ["updated_at", "2018-02-23 22:52:43.046648"]]
+  [1m[36m (1.4ms)[0m  [1mCOMMIT[0m

@@ -1,0 +1,2 @@
+deb [arch=amd64] http://security.debian.org/ stretch/updates main
+deb-src http://security.debian.org/ stretch/updates main

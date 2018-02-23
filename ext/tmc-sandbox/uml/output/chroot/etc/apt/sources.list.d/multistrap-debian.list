@@ -1,0 +1,2 @@
+deb [arch=amd64] http://ftp.fi.debian.org/debian stretch main
+deb-src http://ftp.fi.debian.org/debian stretch main

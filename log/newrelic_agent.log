@@ -1,0 +1,81 @@
+# Logfile created on 2018-02-23 16:46:28 -0600 by logger.rb/47272
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Starting the New Relic agent version 4.8.0.341 in "development" environment.
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : To prevent agent startup add a NEW_RELIC_AGENT_ENABLED=false environment variable or modify the "development" section of your newrelic.yml.
+[2018-02-23 16:46:28 -0600 simetrical (11671)] WARN : No configuration file found. Working directory = /home/ubuntu/tmc-server
+[2018-02-23 16:46:28 -0600 simetrical (11671)] WARN : Looked in these locations (based on defaults): /home/ubuntu/tmc-server/config/newrelic.yml, /home/ubuntu/tmc-server/newrelic.yml, /home/ubuntu/tmc-server/config/newrelic.yml, /home/ubuntu/tmc-server/newrelic.yml, /home/ubuntu/.newrelic/newrelic.yml, /home/ubuntu/newrelic.yml
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Environment: development
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : No known dispatcher detected.
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Application: development
+[2018-02-23 16:46:28 -0600 simetrical (11671)] WARN : No license key found. This often means your newrelic.yml file was not found, or it lacks a section for the running environment, 'development'. You may also want to try linting your newrelic.yml to ensure it is valid YML.
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Installing ActiveRecord 4 instrumentation
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Installing Rails 3+ middleware instrumentation
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Installing Redis Instrumentation
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Installing Sinatra instrumentation
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Installing deferred Rack::Builder instrumentation
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Installing Rack::Builder middleware instrumentation
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Installing Net instrumentation
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Installing ActiveJob instrumentation
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Installing Rails 4 Controller instrumentation
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Installing Rails 4 view instrumentation
+[2018-02-23 16:46:28 -0600 simetrical (11671)] INFO : Finished instrumentation
+[2018-02-23 16:46:29 -0600 simetrical (11671)] INFO : Installing HTTPClient instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Starting the New Relic agent version 4.8.0.341 in "development" environment.
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : To prevent agent startup add a NEW_RELIC_AGENT_ENABLED=false environment variable or modify the "development" section of your newrelic.yml.
+[2018-02-23 16:50:02 -0600 simetrical (11704)] WARN : No configuration file found. Working directory = /home/ubuntu/tmc-server
+[2018-02-23 16:50:02 -0600 simetrical (11704)] WARN : Looked in these locations (based on defaults): /home/ubuntu/tmc-server/config/newrelic.yml, /home/ubuntu/tmc-server/newrelic.yml, /home/ubuntu/tmc-server/config/newrelic.yml, /home/ubuntu/tmc-server/newrelic.yml, /home/ubuntu/.newrelic/newrelic.yml, /home/ubuntu/newrelic.yml
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Environment: development
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : No known dispatcher detected.
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Application: development
+[2018-02-23 16:50:02 -0600 simetrical (11704)] WARN : No license key found. This often means your newrelic.yml file was not found, or it lacks a section for the running environment, 'development'. You may also want to try linting your newrelic.yml to ensure it is valid YML.
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Installing ActiveRecord 4 instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Installing Rails 3+ middleware instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Installing Redis Instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Installing Sinatra instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Installing deferred Rack::Builder instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Installing Rack::Builder middleware instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Installing Net instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Installing ActiveJob instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Installing Rails 4 Controller instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Installing Rails 4 view instrumentation
+[2018-02-23 16:50:02 -0600 simetrical (11704)] INFO : Finished instrumentation
+[2018-02-23 16:50:03 -0600 simetrical (11704)] INFO : Installing HTTPClient instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Starting the New Relic agent version 4.8.0.341 in "development" environment.
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : To prevent agent startup add a NEW_RELIC_AGENT_ENABLED=false environment variable or modify the "development" section of your newrelic.yml.
+[2018-02-23 16:51:54 -0600 simetrical (11819)] WARN : No configuration file found. Working directory = /home/ubuntu/tmc-server
+[2018-02-23 16:51:54 -0600 simetrical (11819)] WARN : Looked in these locations (based on defaults): /home/ubuntu/tmc-server/config/newrelic.yml, /home/ubuntu/tmc-server/newrelic.yml, /home/ubuntu/tmc-server/config/newrelic.yml, /home/ubuntu/tmc-server/newrelic.yml, /home/ubuntu/.newrelic/newrelic.yml, /home/ubuntu/newrelic.yml
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Environment: development
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : No known dispatcher detected.
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Application: development
+[2018-02-23 16:51:54 -0600 simetrical (11819)] WARN : No license key found. This often means your newrelic.yml file was not found, or it lacks a section for the running environment, 'development'. You may also want to try linting your newrelic.yml to ensure it is valid YML.
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Installing ActiveRecord 4 instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Installing Rails 3+ middleware instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Installing Redis Instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Installing Sinatra instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Installing deferred Rack::Builder instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Installing Rack::Builder middleware instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Installing Net instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Installing ActiveJob instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Installing Rails 4 Controller instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Installing Rails 4 view instrumentation
+[2018-02-23 16:51:54 -0600 simetrical (11819)] INFO : Finished instrumentation
+[2018-02-23 16:51:55 -0600 simetrical (11819)] INFO : Installing HTTPClient instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Starting the New Relic agent version 4.8.0.341 in "development" environment.
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : To prevent agent startup add a NEW_RELIC_AGENT_ENABLED=false environment variable or modify the "development" section of your newrelic.yml.
+[2018-02-23 16:52:38 -0600 simetrical (11831)] WARN : No configuration file found. Working directory = /home/ubuntu/tmc-server
+[2018-02-23 16:52:38 -0600 simetrical (11831)] WARN : Looked in these locations (based on defaults): /home/ubuntu/tmc-server/config/newrelic.yml, /home/ubuntu/tmc-server/newrelic.yml, /home/ubuntu/tmc-server/config/newrelic.yml, /home/ubuntu/tmc-server/newrelic.yml, /home/ubuntu/.newrelic/newrelic.yml, /home/ubuntu/newrelic.yml
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Environment: development
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : No known dispatcher detected.
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Application: development
+[2018-02-23 16:52:38 -0600 simetrical (11831)] WARN : No license key found. This often means your newrelic.yml file was not found, or it lacks a section for the running environment, 'development'. You may also want to try linting your newrelic.yml to ensure it is valid YML.
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing ActiveRecord 4 instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing Rails 3+ middleware instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing Redis Instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing Sinatra instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing deferred Rack::Builder instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing Rack::Builder middleware instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing Net instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing ActiveJob instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing Rails 4 Controller instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing Rails 4 view instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Finished instrumentation
+[2018-02-23 16:52:38 -0600 simetrical (11831)] INFO : Installing HTTPClient instrumentation
