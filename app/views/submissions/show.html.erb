@@ -1,0 +1,113 @@
+<h1>Submission <%= @submission.id %></h1>
+<%= render 'submission_details' %>
+
+<% if @submission.pretest_error %>
+  <%= render 'pretest_error' %>
+<% end %>
+
+<ul class="nav nav-tabs nav-justified" id="myTab">
+  <% if @submission.feedback_answers.any? %>
+    <li class="nav-item"><a class="nav-link" href="#feedback" >Feedback</a></li>
+  <% end %>
+  <% if @submission.tests_ran? %>
+    <li class="nav-item"><a class="nav-link" href="#testResults">Test Results</a></li>
+  <% end %>
+  <% if !@submission.stdout.blank? && (can? :read_results, @submission) %>
+    <li class="nav-item"><a class="nav-link" href="#stdout" >Stdout</a></li>
+  <% end %>
+  <% if !@submission.stderr.blank? && (can? :read_results, @submission) %>
+    <li class="nav-item"><a class="nav-link" href="#stderr" >Stderr</a></li>
+  <% end %>
+  <% if !@submission.valgrind.blank? && (can? :read_results, @submission) %>
+    <li class="nav-item"><a class="nav-link" href="#valgrind" >Valgrind</a></li>
+  <% end %>
+  <% if !@submission.vm_log.blank? && (can? :read_vm_log, @submission) %>
+    <li class="nav-item"><a class="nav-link"  href="#logs">Logs</a></li>
+  <% end %>
+  <li class="active nav-item"><a class="nav-link" href="#files">Files</a></li>
+</ul>
+
+<br>
+
+<div class="row">
+  <div class="col-md-12">
+    <div class="tab-content">
+      <% if @submission.feedback_answers.any? %>
+        <div class="tab-pane" id="feedback">
+          <%= render 'feedback_answers' %>
+        </div>
+      <% end %>
+
+
+      <% if @submission.tests_ran? %>
+        <div class="tab-pane" id="testResults">
+          <%= render 'submissions/details' %>
+        </div>
+      <% end %>
+
+      <% if !@submission.stdout.blank? && (can? :read_results, @submission) %>
+        <div class="tab-pane" id="stdout">
+          <%= render 'submissions/stdout' %>
+        </div>
+      <% end %>
+
+      <% if !@submission.stderr.blank? && (can? :read_results, @submission) %>
+        <div class="tab-pane" id="stderr">
+          <%= render 'submissions/stderr' %>
+        </div>
+      <% end %>
+
+      <% if !@submission.valgrind.blank? && (can? :read_results, @submission) %>
+        <div class="tab-pane" id="valgrind">
+          <%= render 'submissions/valgrind' %>
+        </div>
+      <% end %>
+
+      <% if !@submission.vm_log.blank? && (can? :read_vm_log, @submission) %>
+        <div class="tab-pane" id="logs">
+          <%= render 'submissions/logs' %>
+        </div>
+      <% end %>
+
+      <div class="tab-pane active" id="files">
+        <div class="row">
+          <div style="width: 100%">
+            <%= render :partial => 'files/files', :locals => {:files => @files} %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(document).ready(function(){
+
+      var hash = window.location.hash;
+
+      if (hash) {
+        $('ul.nav a[href="' + hash + '"]').tab('show');
+      }
+
+      $('#myTab a').click(function (e) {
+        e.preventDefault();
+        $(this).tab('show');
+        history.pushState(null, null, $(this).attr('href'));
+        window.location.hash = this.hash;
+      });
+
+      // navigate to a tab when the history changes
+      window.addEventListener("popstate", function(e) {
+        if (location.hash) {
+          var activeTab = $('[href=' + location.hash + ']');
+          if (activeTab.length) {
+            activeTab.tab('show');
+          } else {
+            $('.nav-tabs a:last').tab('show');
+          }
+        } else {
+          $('.nav-tabs a:last').tab('show');
+        }
+      });
+    });
+</script>

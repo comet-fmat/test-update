@@ -1,0 +1,6 @@
+{
+    "checkstyle": {
+        "rule": "unknown-checkstyle.xml",
+        "strategy": "fail"
+    }
+}

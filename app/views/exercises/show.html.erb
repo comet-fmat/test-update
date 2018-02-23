@@ -1,0 +1,141 @@
+
+<h1><%= @exercise.name %></h1>
+
+<ul>
+  <li>
+    <%= link_to_if @course.initial_refresh_ready?, 'Download project template (zip)', exercise_zip_url(@exercise) do %>
+      Project template (zip) not available during refresh.
+    <% end %>
+  </li>
+
+  <% if @current_user.guest? %>
+    <li>Log in to see your points</li>
+  <% elsif can? :see_points, @exercise %>
+    <% if @exercise.available_points.empty? %>
+      <li>No points available</li>
+    <% else %>
+      <%
+        available_points = @exercise.available_points.to_a.map(&:name)
+        awarded_points = @exercise.points_for(current_user)
+        nonawarded_points = available_points - awarded_points
+        all_points = awarded_points.map {|pt| [pt, 'success']} + nonawarded_points.map {|pt| [pt, 'failure']}
+        all_points = all_points.sort {|pt1, pt2| Natcmp.natcmp(pt1[0], pt2[0]) }
+      %>
+      <li>
+        You have <%= awarded_points.size %> out of <%= pluralize(available_points.size, 'point') %> for this exercise
+        (<%= raw(all_points.map {|pt| '<span class="' + pt[1] + '">' + h(pt[0]) + '</span>' }.join(', ')) %>).
+      </li>
+    <% end %>
+  <% else %>
+    <li>Points hidden</li>
+  <% end %>
+
+  <% if @exercise.hidden? %>
+    <li>This exercise is currently hidden</li>
+  <% end %>
+
+  <% unlock_time = @exercise.time_unlocked_for(current_user) %>
+  <% if unlock_time %>
+    <li>Was unlocked at <%= unlock_time %></li>
+  <% elsif @exercise.unlockable_for?(current_user) %>
+    <li>
+      <%= link_to 'Waiting for unlock', course_unlock_path(@course) %>
+    </li>
+  <% elsif @exercise.requires_unlock? %>
+    <li>
+      Not yet unlocked.
+      <%= @exercise.unlock_spec_obj.description_for(current_user) %>
+    </li>
+  <% end %>
+  <% if current_user.administrator? && !@exercise.unlock_spec_obj.universal_descriptions.empty? %>
+    <li>
+      Unlock condition:
+      <%= @exercise.unlock_spec_obj.universal_descriptions.join(' and ') %>.
+    </li>
+    <% if @exercise.requires_explicit_unlock? %>
+      <li>Must be unlocked manually by the student because the deadline depends on the unlock time.</li>
+    <% end %>
+  <% end %>
+
+  <% if @exercise.deadline_for(current_user) %>
+    <li>
+      Deadline: <%= @exercise.deadline_for(current_user) %>
+      <% if @exercise.deadline_spec_obj.universal_description %>
+        (<%= @exercise.deadline_spec_obj.universal_description %>)
+      <% end %>
+      <% if @exercise.expired_for?(current_user) %>
+        <% if current_user.administrator? %>
+          (expired (if you weren't an admin))
+        <% else %>
+          (expired)
+        <% end %>
+      <% end %>
+    </li>
+  <% end %>
+
+  <% if !@exercise.returnable? %>
+    <li>The exercise is not returnable.</li>
+  <% end %>
+
+  <% if @exercise.solution && can?(:read, @exercise.solution) %>
+    <li>
+      <%= link_to_if @course.initial_refresh_ready?, 'View suggested solution', exercise_solution_path(@exercise) do %>
+        Solution not available during refresh.
+      <% end %>
+    </li>
+  <% end %>
+
+  <% if can? :read, FeedbackAnswer %>
+    <li><%= link_to 'View feedback', exercise_feedback_answers_path(@exercise) %></li>
+  <% end %>
+</ul>
+
+<% if can? :toggle_submission_result_visibility, @exercise.course %>
+  <% if @exercise.hide_submission_results? %>
+    <%= link_to 'Unhide submission results', toggle_submission_result_visibility_organization_exercise_path(@organization, @exercise), method: :post, class: "btn btn-primary btn-sm" %>
+  <% else %>
+    <%= link_to 'Hide submission results', toggle_submission_result_visibility_organization_exercise_path(@organization, @exercise), method: :post, class: "btn btn-warning btn-sm" %>
+  <% end %>
+<% end %>
+
+<% if @exercise.submittable_by?(current_user) %>
+<div class="row">
+  <div class="col-md-12">
+  <h2>Submit answer</h2>
+    <%= render :partial => 'submissions/form', :locals => { :submission => @new_submission } %>
+  </div>
+  </div>
+<% end %>
+
+<% if signed_in?  && !@course.hide_submissions? %>
+<div class="row">
+  <div class="col-md-12">
+  <h2>Submissions</h2>
+    <% if !@submissions.empty? %>
+      <% if @submissions.size < @submission_count %>
+        <p>Showing <%= @submissions.size%> of <%= @submission_count %> submissions. <%= link_to "View all submissions", exercise_path(@exercise, view_all: 1) %></p>
+      <% end %>
+      <%= show_submission_list(@submissions, :show_exercise_column => false, :show_awarded_points => true) %>
+    <% else %>
+      <p>No submissions yet.</p>
+    <% end %>
+  </div>
+</div>
+<% end %>
+
+<% if can? :rerun, @submissions and @submissions.any? %>
+  <div class="row">
+    <div class="col-md-12">
+      <%
+        if @submissions.count > 10
+          confirm_msg = "Really rerun all #{@submissions.count} submissions?\nIt may take a while."
+        else
+          confirm_msg = nil
+        end
+      %>
+      <br>
+      <%= button_to 'Rerun all submissions', exercise_update_submissions_path(@exercise), :method => :put, :confirm => confirm_msg, class: "btn btn-danger"%>
+      (may add points; never deletes points; may take a long time)
+    </div>
+  </div>
+<% end %>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>org.cometd</groupId>
+        <artifactId>cometd-project</artifactId>
+        <version>3.0.3</version>
+    </parent>
+
+    <modelVersion>4.0.0</modelVersion>
+    <name>TMC Comet parent project</name>
+    <description></description>
+    <groupId>fi.helsinki.cs.tmc</groupId>
+    <artifactId>tmc-comet-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <properties>
+        <cometd.version>3.0.3</cometd.version>
+        <aether.version>1.0.0.v20140518</aether.version>
+    </properties>
+
+    <modules>
+        <module>tmc-comet</module>
+        <module>tmc-comet-server</module>
+    </modules>
+</project>

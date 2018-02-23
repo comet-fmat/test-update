@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# - Picks between sudo, rbenv sudo and rvmsudo
+# - Makes rbenv sudo PATH-preserving, if picked
+#
+
+if [ -n "`which rbenv`" ]; then
+  echo "Using rbenv sudo"
+  rbenv sudo env PATH="$PATH" $@
+elif [ -n "`which rvmsudo`" ]; then
+  echo "Using rvmsudo"
+  rvmsudo $@
+else
+  echo "Using sudo"
+  sudo $@
+fi
+

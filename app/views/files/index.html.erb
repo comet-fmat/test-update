@@ -1,0 +1,45 @@
+<h1><%= @title %>
+    <% if @submission.public? and current_user.administrator? %>
+    - <span class="error"> This submission is public</span>
+    <% end %>
+</h1>
+
+
+<ul>
+  <% if can? :read, @submission %>
+  <li>Download as <%= link_to @submission.downloadable_file_name, submission_path(@submission, :format => 'zip') %></li>
+  <% end %>
+  <% if can? :create, Review %>
+    <li><%= link_to "Start code review", new_submission_review_path(@submission) %></li>
+  <% end %>
+</ul>
+
+  <% unless @submission.message_for_paste.blank? %>
+  <div class="row ">
+    <div class="col-md-12 card">
+      <h3>Message for paste</h3>
+      <%= @submission.message_for_paste %>
+    </div>
+  </div>
+  <% end %>
+  <div class="row">
+    <div class="col-md-12">
+      <div class="panel-group" id="testResultspanel-group">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <a class="panel-group-toggle" data-toggle="collapse" data-parent="#testResultspanel-group" href="#collapseOne">
+              <h2 class="">Test results</h2>
+            </a>
+          </div>
+          <div id="collapseOne" class="panel-collapse collapse out">
+            <div class="panel-body">
+              <%= render 'submissions/details' %>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<%= render :partial => 'files/files', :locals => {:files => @files} %>

@@ -1,0 +1,14 @@
+language: java
+
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+  - openjdk7
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+
+after_success:
+  - mvn clean cobertura:cobertura coveralls:cobertura

@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>fi.helsinki.cs.tmc</groupId>
+        <artifactId>tmc-langs</artifactId>
+        <version>0.7.8-SNAPSHOT</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <properties>
+        <tmc.basedir>${basedir}/../target</tmc.basedir>
+    </properties>
+    <groupId>fi.helsinki.cs.tmc</groupId>
+    <artifactId>tmc-langs-framework</artifactId>
+    <packaging>jar</packaging>
+
+    <name>tmc-langs-framework</name>
+
+    <url>http://testmycode.net</url>
+
+    <!-- Deploy to maven.testmycode.net/nexus -->
+    <distributionManagement>
+        <repository>
+            <id>tmc</id>
+            <name>TMC releases</name>
+            <url>http://maven.testmycode.net/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>tmc-snapshots</id>
+            <name>TMC snapshots</name>
+            <url>http://maven.testmycode.net/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>fi.helsinki.cs.tmc</groupId>
+            <artifactId>tmc-langs-abstraction</artifactId>
+            <version>1.0.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.9</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.16</version>
+        </dependency>
+        <dependency>
+            <groupId>fi.helsinki.cs.tmc</groupId>
+            <artifactId>tmc-junit-runner</artifactId>
+            <version>0.2.6</version>
+        </dependency>
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <outputDirectory>${tmc.basedir}</outputDirectory>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

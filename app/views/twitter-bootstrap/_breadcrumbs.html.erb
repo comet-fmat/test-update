@@ -1,0 +1,19 @@
+<% if @breadcrumbs.present? %>
+  <nav aria-label="breadcrumb" role="navigation" class="breadcumb-nav">
+    <ol class="breadcrumb">
+      <% separator = '/' %>
+      <% @breadcrumbs[0..-2].each do |crumb| %>
+        <li class="breadcrumb-item"><%= link_to crumb[:name], crumb[:url], crumb[:options] %></li>
+      <% end %>
+      <li class="breadcrumb-item active"><%= @breadcrumbs.last[:name] %></li>
+
+    </ol>
+    <% if current_user.administrator? %>
+      <span>[Role: Admin]</span>
+    <% elsif (defined? @organization) && can?(:teach, @organization) %>
+      <span>[Role: Teacher]</span>
+    <% elsif (defined? @course) && can?(:teach, @course) %>
+      <span>[Role: Course-assistant]</span>
+    <% end %>
+  </nav>
+<% end %>

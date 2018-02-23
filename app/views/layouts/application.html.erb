@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1" name="viewport"/>
+    <title>
+      <%= content_for?(:title) ? yield(:title) : "TestMyCode" %>
+    </title>
+    <meta name="description"/>
+    <meta name="author"/>
+    <%= render "layouts/metadata" %>
+    <%= yield(:head) %>
+
+    <%= stylesheet_link_tag 'application', media: 'all' %>
+    <%= stylesheet_link_tag 'application-test', media: 'all' if Rails.env == 'test' %>
+    <%= stylesheet_link_tag params[:controller] if Rails.application.assets.find_asset("#{params[:controller]}.css") %>
+    <%= stylesheet_link_tag 'setup/setup', media: 'all' if controller_path.split('/').first.eql?('setup') %>
+
+    <%= javascript_include_tag 'application' %>
+    <%= javascript_include_tag params[:controller] if Rails.application.assets.find_asset("#{params[:controller]}.js") %>
+
+    <%= javascript_include_tag(
+          comet_js_url('org/cometd.js'),
+          comet_js_url('jquery/jquery.cometd.js')
+        )
+    %>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/atom-one-light.min.css" integrity="sha256-aw9uGjVU5OJyMYN70Vu2kZ1DDVc1slcJCS2XvuPCPKo=" crossorigin="anonymous" />
+  </head>
+  <body class="default">
+    <div class="everything-wrapper">
+      <%= render partial: 'layouts/navigation' %>
+      <div id="everything">
+        <div class="container container-fluid well-large" id="content-area">
+          <div id="breadcrumb">
+            <div class="row">
+              <div class="col-md-12">
+                <%= render 'twitter-bootstrap/breadcrumbs' %>
+              </div>
+            </div>
+          </div>
+          <% if @show_page_presence %>
+            <div id="page-presence"></div>
+          <% end %>
+          <%= bootstrap_flash %>
+          <%= yield %>
+          <br>
+        </div>
+      </div>
+      <div class="everything-push">
+    </div>
+    </div>
+    <%= render partial: 'layouts/footer' %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js" integrity="sha256-/BfiIkHlHoVihZdc6TFuj7MmJ0TWcWsMXkeDFwhi0zw=" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.1.0/highlightjs-line-numbers.min.js" integrity="sha256-ORy35NeVPhp5u86UDEs69WrNPjYJ899tayoT/y0NJ/I=" crossorigin="anonymous"></script>
+    <script>
+    hljs.initHighlightingOnLoad();
+    hljs.initLineNumbersOnLoad();
+    </script>
+  </body>
+</html>
+

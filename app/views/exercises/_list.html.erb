@@ -1,0 +1,32 @@
+<table class="exercise-list table table-hover">
+  <thead>
+    <tr>
+      <th>
+        Exercise
+      </th>
+      <th>
+        Status
+      </th>
+      <th>
+        Deadline
+      </th>
+      <th>
+        Download exercise
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= render partial: 'exercises/list_single',
+      collection: @exercises,
+      as: :exercise,
+      layout: 'exercises/list_table_row_layout',
+      locals: {
+        course: course,
+        exercises: exercises,
+        completion_status: completion_status,
+        unlocks: unlocks
+      } %>
+  </tbody>
+</table>
+
+<%= use_datatables('table.exercise-list', :bPaginate => false) %>

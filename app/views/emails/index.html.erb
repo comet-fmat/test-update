@@ -1,0 +1,38 @@
+<div class="alternative-format-links">
+  [<%= link_to 'plain text', organization_emails_path(format: :txt) %> |
+  <%= link_to 'csv', organization_emails_path(format: :csv) %>]
+</div>
+<h1>Students in <%= @course.title %></h1>
+
+<table class="table table-striped">
+  <tr>
+    <th>
+      Username
+    </th>
+    <th>
+      Email
+    </th>
+    <th>
+      First name
+    </th>
+    <th>
+      Last name
+    </th>
+  </tr>
+  <% @students.each do |student| %>
+    <tr>
+      <td>
+        <%= link_to student.username, participant_path(student) %>
+      </td>
+      <td>
+        <%= mail_to(student.email) %>
+      </td>
+      <td>
+        <%= student.field_value(OpenStruct.new(name: 'first_name')) %>
+      </td>
+      <td>
+        <%= student.field_value(OpenStruct.new(name: 'last_name')) %>
+      </td>
+    </tr>
+  <% end %>
+</table>

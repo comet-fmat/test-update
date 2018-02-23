@@ -1,0 +1,45 @@
+<table class="feedback-numeric-stats">
+  <thead>
+    <tr>
+      <th>Exercise</th>
+      <% for question in questions %>
+        <th title="<%= question.question %>"><%= question.title_or_question %></th>
+      <% end %>
+      <th>Answers*</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% for exercise, averages, answer_count in stats %>
+      <% if answer_count > 0 %>
+        <tr>
+          <td><%= link_to exercise.name, exercise %></td>
+          <% for question in questions %>
+            <td><%= if averages[question.id] then sprintf("%.2f", averages[question.id]) else '-' end %></td>
+          <% end %>
+          <td><%= answer_count %></td>
+        </tr>
+      <% end %>
+    <% end %>
+  </tbody>
+</table>
+
+<% if parent.is_a?(Course) %>
+  <div class="alternative-format-links">[<%= link_to "json", "#{organization_course_feedback_answers_path @organization, @parent, :format => :json}" %>]</div>
+<% elsif parent.is_a?(Exercise) %>
+  <div class="alternative-format-links">[<%= link_to "json", "#{organization_exercise_feedback_answers_path @organization, @parent, :format => :json}" %>]</div>
+<% end %>
+
+<div class="footnote">
+  * Number of submissions answering at least one feedback question.
+</div>
+
+<% if stats.count > 1 %>
+  <%=
+      cols = [{ :sType => 'natural' }] + [nil]*questions.size + [nil]
+      use_datatables('table.feedback-numeric-stats',
+                     :bSort => true,
+                     :bPaginate => false,
+                     :aoColumns => cols
+      )
+  %>
+<% end %>

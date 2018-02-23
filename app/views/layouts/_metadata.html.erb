@@ -1,0 +1,15 @@
+<%
+   page_metadata = {
+     :comet_server_baseurl => comet_server_baseurl,
+     :comet_tmc_baseurl => comet_tmc_baseurl,
+     :session_cookie_name => SiteSetting.value(:session_cookie_key),
+     :username => current_user.guest? ? nil : current_user.username,
+     :base_url => root_url,
+     :current_path => request.path
+   }
+%>
+<script type="text/javascript">
+  var PageMetadata = <%= raw(page_metadata.to_json) %>;
+</script>
+
+<%= csrf_meta_tag %>

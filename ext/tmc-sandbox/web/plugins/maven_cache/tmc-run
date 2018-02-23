@@ -1,0 +1,61 @@
+#!/bin/sh -e
+
+EXERCISE_FILE=/dev/ubdb
+RO_IMAGE=/dev/ubdd
+RW_IMAGE=/dev/ubde
+
+# The following are set by the system before this script is given to the VM
+COMMAND=__COMMAND__
+OPTIONS=__OPTIONS__
+
+mkdir -p /mnt/ro
+mkdir -p /mnt/rw
+
+do_fsck() {
+  set +e
+  fsck -y $1
+  local EXIT_CODE=$?
+  set -e
+  if [ \! \( $EXIT_CODE -eq 0 -o $EXIT_CODE -eq 1 \) ]; then
+    echo "fsck -y $1 failed!"
+    exit $EXIT_CODE
+  fi
+}
+
+case "$COMMAND" in
+  getdeps)
+    do_fsck $RW_IMAGE
+    mount -o rw $RW_IMAGE /mnt/rw
+    chown tmc /mnt/rw # in case it's the first mount
+    
+    export EXERCISE_TAR="$RO_IMAGE"
+    chmod +x /tmc/getdeps.sh
+
+    set +e
+    su tmc -c "/tmc/getdeps.sh $OPTIONS"
+    EXIT_CODE=$?
+    set -e
+
+    umount /mnt/rw
+    exit $EXIT_CODE
+    ;;
+  rsync)
+    do_fsck $RW_IMAGE
+    mount -o ro $RO_IMAGE /mnt/ro
+    mount -o rw $RW_IMAGE /mnt/rw
+    
+    if [ -d /mnt/ro/maven/repository ]; then
+      mkdir -p /mnt/rw/maven/repository
+      rsync -a --delete /mnt/ro/maven/repository/ /mnt/rw/maven/repository || true
+    fi
+    umount /mnt/ro
+    umount /mnt/rw
+    ;;
+  filelist)
+    mount -o ro $RO_IMAGE /mnt/ro
+    cd /mnt/ro
+    find . > /output.txt
+    tar -C / -cf $RW_IMAGE output.txt
+    ;;
+esac
+

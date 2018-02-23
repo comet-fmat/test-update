@@ -1,0 +1,154 @@
+<script type="text/javascript">
+  $(document).ready(function() {
+    $(".datetime-picker").datetimepicker({
+      lazyInit: true,
+      dayOfWeekStart: 1,
+      validateOnBlur: false,
+      allowBlank: true,
+      enterLikeTab: false,
+      timepicker: false,
+      format: 'd.m.Y'
+    });
+  });
+
+  $(function(){
+    $("input[name=unlock_type]").change(function(){
+      var e = document.getElementById('unlock_percentage');
+      if ($("input[name=unlock_type]:checked").val() == 'no_unlocks') {
+        e.disabled = true;
+      } else if ($("input[name=unlock_type]:checked").val() == 'percent_from_previous') {
+        e.disabled = false;
+      }
+    });
+  });
+</script>
+
+<% if @setup_in_progress %>
+  <h1>Create new course</h1>
+  <%= render 'setup/wizard_bar' %>
+  <h2>Phase 3 - Course timing</h2>
+<% else %>
+  <h1>Course timing</h1>
+<% end %>
+
+<p>
+  Here you will schedule the course and exercise sets. Deadline defines the moment, when the submissions has to be made.
+  Unlock means the condition when exercises become available for the student.
+</p>
+
+<p>
+  First choose basic option for both deadlines and unlocks. After that you can check if the details are good
+  or manually adjust them. These options will cover most common initial choices, but full customization
+  can be made later on advanced settings.
+</p>
+
+  <%= form_tag setup_organization_course_course_timing_path(course_id: @course.id), method: 'PUT' do %>
+
+    <!--
+    <% label_tag :start_date, 'Course start date: (not yet implemented)'%>
+    <% date_field :start_date, nil  %>
+    -->
+    <div class='course-timing-quick-fill'>
+      <h3>Deadlines</h3>
+      <%= label_tag :first_set_date, 'Deadline for first set:' %>
+      <%= date_field :first_set_date, nil, class: 'form-control' %>
+      <br>
+      Choose how incoming exercise set deadlines are set:<br>
+      <%= radio_button_tag :deadline_type, "no_deadlines" %>
+      <%= label_tag :deadline_type_no_deadlines, 'No deadlines', class: 'radio-inline' %><br>
+      <%= radio_button_tag :deadline_type, "weekly_deadlines" %>
+      <%= label_tag :deadline_type_weekly_deadlines, 'Weekly', class: 'radio-inline' %><br>
+      <%= radio_button_tag :deadline_type, "all_same_deadline" %>
+      <%= label_tag :deadline_type_all_same_deadline, 'All same', class: 'radio-inline' %><br>
+
+      <h3>Unlocks</h3>
+      Choose the type, how the exercises are opened:<br>
+      <%= radio_button_tag :unlock_type, "no_unlocks", (params[:unlock_type] == "no_unlocks") %>
+      <%= label_tag :unlock_type_no_unlocks, 'Everything open at start', class: 'radio-inline' %><br>
+        <%= radio_button_tag :unlock_type, "percent_from_previous", (params[:unlock_type] == "percent_from_previous") %>
+      <%= label_tag :unlock_type_percent_from_previous, 'Percentage from previous set completed', class: 'radio-inline' %><br>
+      <div style="margin-left: 36px;">
+        <%= number_field_tag :unlock_percentage, '80', min: 0, max:100, style: "width: 3em", disabled: true %>% needed
+      </div>
+
+      <br>
+      <%= submit_tag 'Fill and preview', class: 'btn' %>
+    </div>
+    <hr>
+
+  <h3>Preview</h3>
+
+    <%= submit_tag 'Accept and continue', class: 'btn btn-primary' %>
+
+    <table class="exercise-list table">
+      <thead>
+      <tr>
+        <th>Exercise group</th>
+        <th>Unlock</th>
+        <th>Deadline (hard)</th>
+      </tr>
+      </thead>
+
+      <% @course.exercise_groups.each do |group| %>
+        <%
+          group_display_name = group.name.empty? ? '(default)' : group.name
+          param_name = group.name.empty? ? 'empty_group' : "group[#{group.name}]"
+          uniform = true
+        %>
+
+          <tbody id="group_<%= group.name %>">
+          <tr>
+            <td><%= group_display_name %></td>
+
+            <% #### Unlocks #### %>
+            <td>
+              <% if complex_unlock_conditions?(group) %>
+                Complex conditions
+              <% else %>
+                <%
+                  if group.name.empty?
+                    param_array = 'empty_group'
+                  else
+                    param_array = "group[#{group.name}]"
+                  end
+
+                  group_unlock_conditions = group.group_unlock_conditions
+                  group_unlock_conditions = [''] if group_unlock_conditions.empty? # Always have at least one input field
+                %>
+                <div id="unlock-condition-<%= group.name %>">
+                  <% condition = group_unlock_conditions.first %>
+                  <%= radio_button_tag "#{param_array}_unlock_option", 'no_unlock', condition.blank? %>
+                  <%= label_tag "#{param_array}_unlock_option_no_unlock", "No unlock", class: 'radio-inline' %>
+                  <br>
+                  <%= radio_button_tag "#{param_array}_unlock_option", 'percentage_from', !condition.blank? %>
+                  <%= label_tag "#{param_array}_unlock_option_percentage from", 'Requires ', class: 'radio-inline' %>
+                  <%= number_field_tag "#{param_array}_percentage_required", '80', min: 1, max:100, style: "width: 3em", value: parse_percentage_from_unlock_condition(condition) %>
+                  % from
+                  <%= select_tag "#{param_array}_unlock_groupname", options_for_select(@group_array, selected: parse_group_from_unlock_condition(condition)) %>
+                </div>
+              <% end %>
+            </td>
+
+            <% #### Deadlines %>
+            <td>
+              <%
+                deadline = group.hard_group_deadline
+                deadline_type = 'hard'
+                disabled = false
+
+                static_autofill = deadline.static_deadline_spec
+                #unlock_autofill = deadline.unlock_deadline_spec
+              %>
+
+              <%= text_field_tag "#{param_name}[#{deadline_type}][static]", static_autofill, disabled: disabled, class: "form-control datetime-picker" %><br/>
+            </td>
+
+      <% end %>
+    </table>
+
+  <% end %>
+
+<% if session[:refresh_report] && current_user.administrator? %>
+    <%= render :partial => 'courses/refresh_report', :locals => { :report => session[:refresh_report] } %>
+    <% session.delete(:refresh_report) %>
+<% end %>

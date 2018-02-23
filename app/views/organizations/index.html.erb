@@ -1,0 +1,65 @@
+<% if current_user.administrator? && !Organization.pending_organizations.empty? %>
+  <div class="alert alert-warning" role="alert">
+    <%= pluralize(Organization.pending_organizations.size, 'new organization to verify') %>.
+    <%= link_to 'Show', list_requests_organizations_path %>
+  </div>
+<% end %>
+
+<% if current_user.administrator? && !@courses_under_initial_refresh.empty? %>
+  <div class="alert alert-warning" role="alert">
+    <%=pluralize(@courses_under_initial_refresh.count, 'course')%> under initial refresh!
+    <ul>
+      <% @courses_under_initial_refresh.each do |c| %>
+        <li><%= link_to(c.title, organization_course_path(c.organization, c))%>
+          (organization: <%=c.organization.name%>, started at: <%=c.created_at%>)</li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% unless @my_organizations.empty? %>
+  <h2>My Organizations</h2>
+
+  <%= render @my_organizations %>
+<% end %>
+
+<h2>Frequently Used Organizations</h2>
+
+<%= render @pinned_organizations %>
+
+<h2>All organizations</h2>
+
+<div id="all-orgs-list">
+  <input class="search form-control" placeholder="Search" />
+  <br>
+  <ul class="list" style="list-style: none; padding-left: 0;">
+    <% @organizations.each do |organization| %>
+      <% next if organization.hidden? && !can?(:view_hidden_organizations, nil) %>
+      <li>
+        <%= link_to organization_path(organization), class: "organization-card-link" do %>
+          <div class="card small-organization-card">
+            <div class="card-body <%= organization.hidden? ? 'text-secondary' : '' %>">
+              <%= image_tag(organization.logo.url(:small_logo), class: "img-fluid") %>
+              <div>
+              <h6 class="card-title">
+                <%= organization.name %>
+                <small class="text-muted <%= /[[:upper:]]/.match(organization.name[-1]) ? 'text-littlebitup' : '' %>">
+                  (<%= organization.slug %>)
+                </small>
+              </h6>
+              <%= organization.information %>
+            </div>
+          </div>
+          </div>
+        <% end %>
+        <br>
+      </li>
+    <% end %>
+  </ul>
+</div>
+
+<br>
+
+<% if current_user.administrator? %>
+    <%= link_to 'Request a new organization', new_organization_path, class: "btn btn-primary" %>
+<% end %>

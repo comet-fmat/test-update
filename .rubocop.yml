@@ -1,0 +1,46 @@
+AllCops:
+  Include:
+    - '**/config.ru'
+    - '**/Rakefile'
+  Exclude:
+    - 'db/**/*'
+    - 'ext/**/*'
+    - 'tmp/**/*'
+  TargetRubyVersion: 2.2
+
+Rails:
+  Enabled: true
+
+# Style
+
+Style/Documentation:
+  Enabled: false
+
+Style/SpecialGlobalVars:
+  Enabled: false
+
+# Metrics
+
+Metrics/AbcSize:
+  Enabled: false
+
+Metrics/BlockNesting:
+  Enabled: false
+
+Metrics/ClassLength:
+  Enabled: false
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+Metrics/LineLength:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
